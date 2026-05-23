@@ -130,7 +130,14 @@ function cardImg(face, side = 'back') {
 }
 
 // ── GAME START ──
-socket.on('game_start', ({ myName: mn, oppName: on, game, playerIndex }) => {
+socket.on('game_start', ({ game, players }) => {
+  // Find myself by name in players array
+  const me = players.find(p => p.name === myName) || players[0];
+  const opp = players.find(p => p.name !== myName) || players[1];
+  const playerIndex = me.playerIndex;
+  const mn = me.name;
+  const on = opp.name;
+
   myName = mn; oppName = on; gameData = game;
   myPicks = {}; oppPicks = {}; usedFaces = new Set();
   myColour = playerIndex === 0 ? 'pink' : 'blue';

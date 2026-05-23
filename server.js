@@ -139,8 +139,14 @@ io.on('connection', (socket) => {
     socket.join(code);
 
     const [p1, p2] = players;
-    io.to(p1.id).emit('game_start', { myName: p1.name, oppName: p2.name, game: shuffledGame, playerIndex: 0 });
-    io.to(p2.id).emit('game_start', { myName: p2.name, oppName: p1.name, game: shuffledGame, playerIndex: 1 });
+    // Emit to room channel — each client identifies themselves by name
+    io.to(code).emit('game_start', {
+      game: shuffledGame,
+      players: [
+        { name: p1.name, playerIndex: 0 },
+        { name: p2.name, playerIndex: 1 }
+      ]
+    });
 
     setTimeout(() => startRound(code), 2000);
   });
