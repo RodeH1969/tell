@@ -277,4 +277,4 @@ async function resolveGame(code) {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`TELL running on port ${PORT}`));s
+server.listen(PORT, () => console.log(`TELL running on port ${PORT}`));
