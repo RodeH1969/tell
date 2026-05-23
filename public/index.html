@@ -16,7 +16,7 @@
   <p class="splash-tag">Five faces. One truth. No mercy.</p>
 </div>
 
-<!-- ══ CREATOR LOBBY: just name + one button ══ -->
+<!-- ══ CREATOR LOBBY ══ -->
 <div id="screen-creator" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <label class="field-label">YOUR NAME</label>
@@ -24,20 +24,16 @@
   <button id="btn-challenge" class="btn-primary" onclick="createGame()" disabled>CHALLENGE A FRIEND</button>
 </div>
 
-<!-- ══ WAITING (creator sees this after creating) ══ -->
+<!-- ══ WAITING ══ -->
 <div id="screen-waiting" class="screen">
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
   <p class="waiting-label">CHALLENGE SENT</p>
-  <p class="waiting-sub">Share this link with your opponent</p>
-  <div class="link-box">
-    <span id="invite-link"></span>
-    <button id="copy-btn" onclick="copyLink()">COPY</button>
-  </div>
-  <p class="waiting-sub" style="margin-top:20px">Waiting for them to join…</p>
+  <button class="btn-primary share-invite-btn" onclick="shareInvite()">SEND CHALLENGE →</button>
+  <p class="waiting-sub">Waiting for them to join…</p>
   <div class="waiting-dots"><span></span><span></span><span></span></div>
 </div>
 
-<!-- ══ JOINER LOBBY: arrives via link, just needs name ══ -->
+<!-- ══ JOINER LOBBY ══ -->
 <div id="screen-joiner" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <p class="join-challenge-msg">You've been challenged!</p>
@@ -95,7 +91,7 @@
   <button class="btn-primary share-btn" onclick="shareResult()">Come play TELL with me →</button>
 </div>
 
-<!-- Popup: Let's Play Tell -->
+<!-- Popup -->
 <div id="popup-letsplay" class="popup hidden">
   <div class="popup-inner">
     <img src="logo.jpeg" alt="TELL" style="width:80px;margin-bottom:12px">
@@ -104,7 +100,6 @@
 </div>
 
 <canvas id="fireworks-canvas"></canvas>
-
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
 </body>

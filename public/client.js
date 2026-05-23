@@ -49,9 +49,8 @@ function createGame() {
 
 socket.on('room_created', ({ code }) => {
   roomCode = code;
+  window._inviteLink = `${location.origin}?room=${code}`;
   show('screen-waiting');
-  const link = `${location.origin}?room=${code}`;
-  document.getElementById('invite-link').textContent = link;
 });
 
 // ── JOIN GAME ──
@@ -69,14 +68,14 @@ socket.on('join_error', ({ message }) => {
   document.getElementById('btn-join').textContent = 'JOIN NOW';
 });
 
-// ── COPY LINK ──
-function copyLink() {
-  const link = document.getElementById('invite-link').textContent;
-  navigator.clipboard.writeText(link).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = 'COPIED ✓';
-    setTimeout(() => btn.textContent = 'COPY', 2200);
-  });
+// ── SHARE INVITE ──
+function shareInvite() {
+  const link = window._inviteLink;
+  if (navigator.share) {
+    navigator.share({ title: 'TELL', text: 'I challenge you to a game of TELL 👀', url: link });
+  } else {
+    navigator.clipboard.writeText(link).then(() => alert('Link copied! Send it to your opponent.'));
+  }
 }
 
 // ── GAME START ──
