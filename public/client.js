@@ -200,6 +200,8 @@ socket.on('game_start', ({ game, players }) => {
 
   renderFaceCards();
   renderStrip();
+  // Preload all question audio buffers
+  if (gameData.questions) preloadAudio(gameData.questions);
   setTimeout(showLetsPlay, 1000);
 });
 
