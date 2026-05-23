@@ -124,30 +124,29 @@ socket.on('game_start', ({ myName: mn, oppName: on, game, playerIndex }) => {
 
   show('screen-game');
 
-  // Header names with colours
+  // Creator = pink (left), Joiner = blue (right) — always consistent
+  const pinkName = myColour === 'pink' ? myName : oppName;
+  const blueName  = myColour === 'pink' ? oppName : myName;
+
+  // Header — show MY name on my side
   const myHdr = document.getElementById('hdr-my-name');
   const oppHdr = document.getElementById('hdr-opp-name');
   myHdr.textContent = myName.toUpperCase();
   myHdr.style.color = myColour === 'pink' ? '#e75480' : '#3498db';
+  myHdr.style.animation = 'pulsePink 2s ease-in-out infinite';
   oppHdr.textContent = oppName.toUpperCase();
   oppHdr.style.color = myColour === 'pink' ? '#3498db' : '#e75480';
+  oppHdr.style.animation = 'pulseBlue 2s ease-in-out infinite';
 
-  // Strip labels
-  const myStrip = document.getElementById('strip-my-name');
-  const oppStrip = document.getElementById('strip-opp-name');
-  // Creator always left (pink), joiner always right (blue)
-  if (myColour === 'pink') {
-    myStrip.textContent = myName.toUpperCase();
-    myStrip.style.color = '#e75480';
-    oppStrip.textContent = oppName.toUpperCase();
-    oppStrip.style.color = '#3498db';
-  } else {
-    // I'm blue (right), so swap — strip left is opponent (pink)
-    myStrip.textContent = oppName.toUpperCase();
-    myStrip.style.color = '#e75480';
-    oppStrip.textContent = myName.toUpperCase();
-    oppStrip.style.color = '#3498db';
-  }
+  // Strip — LEFT always pink player, RIGHT always blue player
+  const leftStrip  = document.getElementById('strip-my-name');
+  const rightStrip = document.getElementById('strip-opp-name');
+  leftStrip.textContent = pinkName.toUpperCase();
+  leftStrip.style.color = '#e75480';
+  leftStrip.style.animation = 'pulsePink 2s ease-in-out infinite';
+  rightStrip.textContent = blueName.toUpperCase();
+  rightStrip.style.color = '#3498db';
+  rightStrip.style.animation = 'pulseBlue 2s ease-in-out infinite';
 
   renderCards('faces-row', 'front');
   renderStrip();

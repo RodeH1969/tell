@@ -237,12 +237,13 @@ html, body {
 #game-header {
   width: 100%;
   max-width: 600px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 14px 4px 10px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 10px;
+  gap: 8px;
 }
 
 .score-block {
@@ -254,10 +255,9 @@ html, body {
 .score-block.right { align-items: flex-end; }
 
 .score-name {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: var(--mid);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .score-num {
@@ -277,6 +277,7 @@ html, body {
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 5px 14px;
+  white-space: nowrap;
 }
 
 /* Timer */
@@ -877,43 +878,46 @@ html, body {
 }
 
 .strip-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
   align-items: center;
   padding: 0 4px 6px;
+  width: 100%;
 }
 
 .strip-header-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--mid);
-  flex: 1;
+  letter-spacing: 0.14em;
+  text-align: left;
 }
 
-.strip-header-label:last-child {
+.strip-header-right {
   text-align: right;
 }
 
 .strip-header-mid {
-  flex: 1.4;
+  text-align: center;
 }
 
 #answer-strip {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 100%;
 }
 
 .strip-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--off);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 5px 8px;
-  min-height: 44px;
+  min-height: 46px;
+  width: 100%;
   transition: border-color 0.2s;
 }
 
@@ -925,31 +929,28 @@ html, body {
 .strip-cell {
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .strip-cell-left {
-  flex: 1;
   justify-content: flex-end;
 }
 
 .strip-cell-right {
-  flex: 1;
   justify-content: flex-start;
 }
 
 .strip-cell-mid {
-  flex: 1.4;
   justify-content: center;
   text-align: center;
 }
 
 .strip-thumb {
-  width: 28px;
-  height: 34px;
+  width: 30px;
+  height: 36px;
   border-radius: 4px;
   overflow: hidden;
   background: var(--border);
+  flex-shrink: 0;
 }
 
 .strip-thumb img {
@@ -968,7 +969,7 @@ html, body {
 
 .strip-answer-name {
   font-family: var(--serif);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--teal);
   line-height: 1.2;
