@@ -3,7 +3,7 @@
 const socket = io();
 
 // ── STATE ──
-let myName = '', oppName = '', roomCode = '';
+let myName = '', oppName = '';
 let gameData = null;
 let myPicks = {};
 let oppPicks = {};
@@ -13,14 +13,14 @@ let pickedThisRound = false;
 let finalSelectedQ = null;
 let finalPicks = {};
 
+// Read room code immediately — do NOT wait for splash timeout
+const _urlParams = new URLSearchParams(window.location.search);
+let roomCode = _urlParams.get('room') || '';
+
 // ── SPLASH → correct screen ──
 window.addEventListener('load', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const codeFromUrl = urlParams.get('room');
-
   setTimeout(() => {
-    if (codeFromUrl) {
-      roomCode = codeFromUrl;
+    if (roomCode) {
       show('screen-joiner');
       setTimeout(() => document.getElementById('input-joiner-name').focus(), 100);
     } else {
@@ -63,18 +63,32 @@ function joinGame() {
 }
 
 socket.on('join_error', ({ message }) => {
-  alert(message);
+  const errEl = document.getElementById('join-error-msg');
+  if (errEl) {
+    errEl.textContent = message === 'Room not found.'
+      ? 'Room not found. The link may have expired — ask your opponent to create a new game.'
+      : message;
+    errEl.classList.remove('hidden');
+  }
   document.getElementById('btn-join').disabled = false;
-  document.getElementById('btn-join').textContent = 'JOIN NOW';
+  document.getElementById('btn-join').textContent = 'TRY AGAIN';
 });
 
 // ── SHARE INVITE ──
 function shareInvite() {
   const link = window._inviteLink;
+  const showWaiting = () => {
+    document.getElementById('waiting-status').classList.remove('hidden');
+  };
   if (navigator.share) {
-    navigator.share({ title: 'TELL', text: 'I challenge you to a game of TELL 👀', url: link });
+    navigator.share({ title: 'TELL', text: 'I challenge you to a game of TELL 👀', url: link })
+      .then(showWaiting)
+      .catch(() => showWaiting()); // show waiting even if they cancel share
   } else {
-    navigator.clipboard.writeText(link).then(() => alert('Link copied! Send it to your opponent.'));
+    navigator.clipboard.writeText(link).then(() => {
+      alert('Link copied! Send it to your opponent.');
+      showWaiting();
+    });
   }
 }
 
