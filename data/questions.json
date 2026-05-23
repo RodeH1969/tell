@@ -10,29 +10,29 @@
       { "name": "James Cook",        "front": "James Cook - front.png",        "back": "James Cook - back.png" }
     ],
     "questions": [
-      { "text": "Adam Smith, the economist who wrote The Wealth of Nations.", "answerIndex": 0 },
-      { "text": "Benjamin Franklin, who helped draft the United States Declaration of Independence.", "answerIndex": 1 },
-      { "text": "George Washington, the first President of the United States.", "answerIndex": 2 },
-      { "text": "Mozart, the Austrian musical prodigy and prolific composer.", "answerIndex": 3 },
-      { "text": "James Cook, the British Royal Navy captain, navigator, and cartographer.", "answerIndex": 4 }
+      { "text": "Adam Smith, the economist who wrote The Wealth of Nations.", "answerIndex": 0, "audio": "Game1_Q1.mp3" },
+      { "text": "Benjamin Franklin, who helped draft the United States Declaration of Independence.", "answerIndex": 1, "audio": "Game1_Q2.mp3" },
+      { "text": "George Washington, the first President of the United States.", "answerIndex": 2, "audio": "Game1_Q3.mp3" },
+      { "text": "Mozart, the Austrian musical prodigy and prolific composer.", "answerIndex": 3, "audio": "Game1_Q4.mp3" },
+      { "text": "James Cook, the British Royal Navy captain, navigator, and cartographer.", "answerIndex": 4, "audio": "Game1_Q5.mp3" }
     ]
   },
   {
     "gameId": "Game2",
     "title": "Modern Faces",
     "faces": [
-      { "name": "Ben Shapiro",       "front": "Ben Shapiro - front.png",       "back": "Ben Shapiro - back.png" },
-      { "name": "Pete Hegseth",      "front": "Pete Hegseth - front.png",      "back": "Pete Hegseth - back.png" },
-      { "name": "Randy Orton",       "front": "Randy Orton - front.png",       "back": "Randy Orton - back.png" },
-      { "name": "Richie McCaw",      "front": "Richie Mccaw - front.png",      "back": "Richie Mccaw - back.png" },
-      { "name": "Robert Kennedy Jnr","front": "Robert Kennedy Jnr - front.png","back": "Robert Kennedy Jnr - back.png" }
+      { "name": "Ben Shapiro",        "front": "Ben Shapiro - front.png",        "back": "Ben Shapiro - back.png" },
+      { "name": "Pete Hegseth",       "front": "Pete Hegseth - front.png",       "back": "Pete Hegseth - back.png" },
+      { "name": "Randy Orton",        "front": "Randy Orton - front.png",        "back": "Randy Orton - back.png" },
+      { "name": "Richie McCaw",       "front": "Richie Mccaw - front.png",       "back": "Richie Mccaw - back.png" },
+      { "name": "Robert Kennedy Jnr", "front": "Robert Kennedy Jnr - front.png", "back": "Robert Kennedy Jnr - back.png" }
     ],
     "questions": [
-      { "text": "Ben Shapiro, the American conservative political commentator and media host.", "answerIndex": 0 },
-      { "text": "Pete Hegseth, the United States Secretary of Defense.", "answerIndex": 1 },
-      { "text": "Randy Orton, the highly decorated American professional wrestler and actor.", "answerIndex": 2 },
-      { "text": "Richie McCaw, the legendary New Zealand rugby union player who captained the All Blacks.", "answerIndex": 3 },
-      { "text": "Robert Kennedy Jnr, the political figure who is the nephew of former U.S. President John F. Kennedy.", "answerIndex": 4 }
+      { "text": "Ben Shapiro, the American conservative political commentator and media host.", "answerIndex": 0, "audio": "Game2_Q1.mp3" },
+      { "text": "Pete Hegseth, the United States Secretary of Defense.", "answerIndex": 1, "audio": "Game2_Q2.mp3" },
+      { "text": "Randy Orton, the highly decorated American professional wrestler and actor.", "answerIndex": 2, "audio": "Game2_Q3.mp3" },
+      { "text": "Richie McCaw, the legendary New Zealand rugby union player who captained the All Blacks.", "answerIndex": 3, "audio": "Game2_Q4.mp3" },
+      { "text": "Robert Kennedy Jnr, the political figure who is the nephew of former U.S. President John F. Kennedy.", "answerIndex": 4, "audio": "Game2_Q5.mp3" }
     ]
   },
   {
@@ -46,47 +46,47 @@
       { "name": "Richard Burton","front": "Richard Burton - front.png","back": "Richard Burton - back.png" }
     ],
     "questions": [
-      { "text": "John Newcombe, the Australian former World No. 1 tennis champion.", "answerIndex": 0 },
-      { "text": "Johnny Carson, the iconic American television host and comedian.", "answerIndex": 1 },
-      { "text": "Bobby Charlton, the English football legend, 1966 World Cup winner and Manchester United icon.", "answerIndex": 2 },
-      { "text": "Pierre Trudeau, the charismatic 15th Prime Minister of Canada.", "answerIndex": 3 },
-      { "text": "Richard Burton, the acclaimed Welsh stage and cinema actor who married Elizabeth Taylor.", "answerIndex": 4 }
+      { "text": "John Newcombe, the Australian former World No. 1 tennis champion.", "answerIndex": 0, "audio": "Game3_Q1.mp3" },
+      { "text": "Johnny Carson, the iconic American television host and comedian.", "answerIndex": 1, "audio": "Game3_Q2.mp3" },
+      { "text": "Bobby Charlton, the English football legend and 1966 World Cup winner.", "answerIndex": 2, "audio": "Game3_Q3.mp3" },
+      { "text": "Pierre Trudeau, the charismatic 15th Prime Minister of Canada.", "answerIndex": 3, "audio": "Game3_Q4.mp3" },
+      { "text": "Richard Burton, the acclaimed Welsh actor who married Elizabeth Taylor.", "answerIndex": 4, "audio": "Game3_Q5.mp3" }
     ]
   },
   {
     "gameId": "Game4",
     "title": "Icons of the 20th Century",
     "faces": [
-      { "name": "Charlie Chaplin",  "front": "Charlie Chaplin - front.png",  "back": "Charlie Chaplin - back.png" },
-      { "name": "Edmund Hillary",   "front": "Edmund Hilary - front.png",    "back": "Edmund Hilary - back.png" },
-      { "name": "Keith Miller",     "front": "Keith Miller - front.png",     "back": "Keith Miller - back.png" },
-      { "name": "Liberace",         "front": "Liberace - front.png",         "back": "Liberace - back.png" },
-      { "name": "Michael Caine",    "front": "Micahel Caine - front.png",    "back": "Micahel Caine - back.png" }
+      { "name": "Charlie Chaplin", "front": "Charlie Chaplin - front.png",  "back": "Charlie Chaplin - back.png" },
+      { "name": "Edmund Hillary",  "front": "Edmund Hilary - front.png",    "back": "Edmund Hilary - back.png" },
+      { "name": "Keith Miller",    "front": "Keith Miller - front.png",     "back": "Keith Miller - back.png" },
+      { "name": "Liberace",        "front": "Liberace - front.png",         "back": "Liberace - back.png" },
+      { "name": "Michael Caine",   "front": "Micahel Caine - front.png",    "back": "Micahel Caine - back.png" }
     ],
     "questions": [
-      { "text": "Charlie Chaplin, the English comic actor, filmmaker, and composer.", "answerIndex": 0 },
-      { "text": "Edmund Hillary, the New Zealand mountaineer and first confirmed climber to reach the summit of Mount Everest.", "answerIndex": 1 },
-      { "text": "Keith Miller, the Australian Test cricketer and World War II fighter pilot.", "answerIndex": 2 },
-      { "text": "Liberace, the flamboyant and virtuosic American pianist and entertainer.", "answerIndex": 3 },
-      { "text": "Michael Caine, the Academy Award-winning English actor renowned for his distinctive Cockney accent.", "answerIndex": 4 }
+      { "text": "Charlie Chaplin, the English comic actor, filmmaker, and composer.", "answerIndex": 0, "audio": "Game4_Q1.mp3" },
+      { "text": "Edmund Hillary, the New Zealand mountaineer and first to reach the summit of Mount Everest.", "answerIndex": 1, "audio": "Game4_Q2.mp3" },
+      { "text": "Keith Miller, the Australian Test cricketer and World War II fighter pilot.", "answerIndex": 2, "audio": "Game4_Q3.mp3" },
+      { "text": "Liberace, the flamboyant and virtuosic American pianist and entertainer.", "answerIndex": 3, "audio": "Game4_Q4.mp3" },
+      { "text": "Michael Caine, the Academy Award-winning English actor renowned for his Cockney accent.", "answerIndex": 4, "audio": "Game4_Q5.mp3" }
     ]
   },
   {
     "gameId": "Game5",
     "title": "Minds That Changed the World",
     "faces": [
-      { "name": "Sigmund Freud",   "front": "Sigmund Freud - front.png",   "back": "Sigmund Freud - back.png" },
-      { "name": "Nikola Tesla",    "front": "Nikola Tesla - front.png",    "back": "Nikola Tesla - back.png" },
-      { "name": "Mark Twain",      "front": "Mark Twain - front.png",      "back": "Mark Twain - back.png" },
-      { "name": "JD Salinger",     "front": "JD Salinger - front.png",     "back": "JD Salinger - back.png" },
-      { "name": "Winston Churchill","front": "Winston Churchill - front.png","back": "Winston Churchill - back.png" }
+      { "name": "Sigmund Freud",    "front": "Sigmund Freud - front.png",    "back": "Sigmund Freud - back.png" },
+      { "name": "Nikola Tesla",     "front": "Nikola Tesla - front.png",     "back": "Nikola Tesla - back.png" },
+      { "name": "Mark Twain",       "front": "Mark Twain - front.png",       "back": "Mark Twain - back.png" },
+      { "name": "JD Salinger",      "front": "JD Salinger - front.png",      "back": "JD Salinger - back.png" },
+      { "name": "Winston Churchill", "front": "Winston Churchill - front.png","back": "Winston Churchill - back.png" }
     ],
     "questions": [
-      { "text": "Sigmund Freud, the Austrian neurologist who founded psychoanalysis.", "answerIndex": 0 },
-      { "text": "Nikola Tesla, the inventor who designed the alternating current (AC) electricity system.", "answerIndex": 1 },
-      { "text": "Mark Twain, the author of The Adventures of Tom Sawyer and Huckleberry Finn.", "answerIndex": 2 },
-      { "text": "JD Salinger, the reclusive American author best known for writing The Catcher in the Rye.", "answerIndex": 3 },
-      { "text": "Winston Churchill, the two-time British Prime Minister.", "answerIndex": 4 }
+      { "text": "Sigmund Freud, the Austrian neurologist who founded psychoanalysis.", "answerIndex": 0, "audio": "Game5_Q1.mp3" },
+      { "text": "Nikola Tesla, the inventor who designed the alternating current electricity system.", "answerIndex": 1, "audio": "Game5_Q2.mp3" },
+      { "text": "Mark Twain, the author of The Adventures of Tom Sawyer and Huckleberry Finn.", "answerIndex": 2, "audio": "Game5_Q3.mp3" },
+      { "text": "JD Salinger, the reclusive American author best known for The Catcher in the Rye.", "answerIndex": 3, "audio": "Game5_Q4.mp3" },
+      { "text": "Winston Churchill, the two-time British Prime Minister.", "answerIndex": 4, "audio": "Game5_Q5.mp3" }
     ]
   }
 ]

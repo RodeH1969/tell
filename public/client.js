@@ -123,6 +123,20 @@ function shareInvite() {
   }
 }
 
+// ── QUESTION AUDIO ──
+let _questionAudio = null;
+function playQuestion(filename) {
+  if (_questionAudio) { _questionAudio.pause(); _questionAudio = null; }
+  _questionAudio = new Audio(`/audio/${filename}`);
+  _questionAudio.volume = 1.0;
+  // Duck theme music while question plays
+  if (_music) _music.volume = 0.15;
+  _questionAudio.play().catch(() => {});
+  _questionAudio.onended = () => {
+    if (_music) _music.volume = 0.4;
+  };
+}
+
 // ── CARD IMAGE PATH ──
 function cardImg(face, side = 'back') {
   const file = side === 'front' ? face.front : face.back;
@@ -207,7 +221,6 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
   pickedThisRound = false;
   document.getElementById('hdr-round').textContent = `${round} / ${totalRounds}`;
   document.getElementById('status-bar').textContent = '';
-  document.getElementById('question-text').textContent = '';
 
   document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
     c.classList.remove('my-pick','opp-pick','both-pick','locked');
@@ -217,7 +230,11 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
   highlightActiveSlot(round);
 
   showRoundPopup(round, () => {
-    document.getElementById('question-text').textContent = question;
+    // Play audio question
+    if (gameData.questions[round-1].audio) {
+      playQuestion(gameData.questions[round-1].audio);
+    }
+    // Unlock non-used faces
     document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
       if (!usedFaces.has(i)) c.classList.remove('locked');
     });

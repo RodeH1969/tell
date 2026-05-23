@@ -909,14 +909,14 @@ html, body {
 
 .strip-row {
   display: grid;
-  grid-template-columns: 34px 1fr 34px;
+  grid-template-columns: 48px 1fr 48px;
   align-items: center;
   gap: 4px;
   background: var(--off);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px 6px;
-  min-height: 44px;
+  min-height: 58px;
   transition: border-color 0.2s;
 }
 
@@ -939,9 +939,9 @@ html, body {
 }
 
 .strip-thumb {
-  width: 28px;
-  height: 34px;
-  border-radius: 4px;
+  width: 42px;
+  height: 52px;
+  border-radius: 5px;
   overflow: hidden;
   background: var(--border);
 }
