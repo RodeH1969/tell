@@ -979,3 +979,112 @@ html, body {
   font-size: 52px;
   letter-spacing: 0.06em;
 }
+
+/* ══ PULSING NAME COLOURS ══ */
+.pulse-pink {
+  color: #e75480 !important;
+  animation: pulsePink 2s ease-in-out infinite;
+}
+.pulse-blue {
+  color: #3498db !important;
+  animation: pulseBlue 2s ease-in-out infinite;
+}
+@keyframes pulsePink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+@keyframes pulseBlue {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ══ USED FACE (already picked) ══ */
+.face-card.used-face {
+  opacity: 0.3;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+
+/* ══ FINAL PHASE REDESIGN ══ */
+#screen-final {
+  gap: 0;
+  padding: 12px 12px 32px;
+  overflow-y: auto;
+}
+
+#final-my-section, #final-opp-section {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 14px;
+}
+
+.final-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--mid);
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+#final-my-names, #final-opp-names {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.final-name-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--off);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.final-name-item:hover    { border-color: var(--teal); background: var(--teal-light); }
+.final-name-item.selected { border-color: var(--gold); background: var(--gold-light); }
+
+.final-opp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  opacity: 0.85;
+}
+
+.fn-thumb {
+  width: 30px;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.fn-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+}
+.fn-empty {
+  width: 100%; height: 100%;
+  background: var(--border);
+}
+
+.fn-name {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.fn-opp {
+  color: var(--mid);
+  font-weight: 400;
+}
+
+/* Strip header right align */
+.strip-header-right { text-align: right; }

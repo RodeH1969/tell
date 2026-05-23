@@ -1,19 +1,20 @@
-// ── TELL client.js v4 ──
+// ── TELL client.js v5 ──
 
 const socket = io();
 
 // ── STATE ──
-let myName = '', oppName = '';
+let myName = '', oppName = '', myColour = 'pink';
 let gameData = null;
-let myPicks = {};
+let myPicks = {};       // round -> faceIndex (locked per round)
 let oppPicks = {};
+let usedFaces = new Set(); // faces already picked — can't reuse
 let currentRound = 0;
 let timerInterval = null;
 let pickedThisRound = false;
-let finalSelectedQ = null;
+let finalSelectedName = null;  // name index selected in final phase
 let finalPicks = {};
+let finalOppPicks = {};
 
-// Read room code immediately — do NOT wait for splash timeout
 const _urlParams = new URLSearchParams(window.location.search);
 let roomCode = _urlParams.get('room') || '';
 
@@ -78,14 +79,12 @@ socket.on('join_error', ({ message }) => {
 function shareInvite() {
   const link = window._inviteLink;
   const showWaiting = () => {
-    // Hide the share button, show waiting state
     document.querySelector('.share-invite-btn').classList.add('hidden');
     document.getElementById('waiting-status').classList.remove('hidden');
   };
   if (navigator.share) {
     navigator.share({ title: 'TELL', text: 'I challenge you to a game of TELL 👀', url: link })
-      .then(showWaiting)
-      .catch(() => showWaiting());
+      .then(showWaiting).catch(() => showWaiting());
   } else {
     navigator.clipboard.writeText(link).then(() => {
       alert('Link copied! Send it to your opponent.');
@@ -95,43 +94,65 @@ function shareInvite() {
 }
 
 // ── GAME START ──
-socket.on('game_start', ({ myName: mn, oppName: on, game }) => {
+socket.on('game_start', ({ myName: mn, oppName: on, game, playerIndex }) => {
   myName = mn;
   oppName = on;
   gameData = game;
   myPicks = {};
   oppPicks = {};
+  usedFaces = new Set();
+  // Creator = pink (left), joiner = blue (right)
+  myColour = playerIndex === 0 ? 'pink' : 'blue';
 
   show('screen-game');
-  document.getElementById('hdr-my-name').textContent = myName.toUpperCase();
-  document.getElementById('hdr-opp-name').textContent = oppName.toUpperCase();
-  document.getElementById('strip-my-name').textContent = myName.toUpperCase();
-  document.getElementById('strip-opp-name').textContent = oppName.toUpperCase();
 
-  // Render cards showing FRONT (logo side) — locked
+  // Header names with colours
+  const myHdr = document.getElementById('hdr-my-name');
+  const oppHdr = document.getElementById('hdr-opp-name');
+  myHdr.textContent = myName.toUpperCase();
+  myHdr.style.color = myColour === 'pink' ? '#e75480' : '#3498db';
+  oppHdr.textContent = oppName.toUpperCase();
+  oppHdr.style.color = myColour === 'pink' ? '#3498db' : '#e75480';
+
+  // Strip labels
+  const myStrip = document.getElementById('strip-my-name');
+  const oppStrip = document.getElementById('strip-opp-name');
+  // Creator always left (pink), joiner always right (blue)
+  if (myColour === 'pink') {
+    myStrip.textContent = myName.toUpperCase();
+    myStrip.style.color = '#e75480';
+    oppStrip.textContent = oppName.toUpperCase();
+    oppStrip.style.color = '#3498db';
+  } else {
+    // I'm blue (right), so swap — strip left is opponent (pink)
+    myStrip.textContent = oppName.toUpperCase();
+    myStrip.style.color = '#e75480';
+    oppStrip.textContent = myName.toUpperCase();
+    oppStrip.style.color = '#3498db';
+  }
+
   renderCards('faces-row', 'front');
   renderStrip();
-
-  // After 1s show popup, then flip cards to back (faces)
   setTimeout(showLetsPlay, 1000);
 });
 
 // ── LETS PLAY POPUP ──
 function showLetsPlay() {
   const popup = document.getElementById('popup-letsplay');
+  const text = popup.querySelector('.popup-text');
+  const img = popup.querySelector('img');
+  img.style.display = '';
+  text.textContent = "Let's Play Tell!";
+  text.style.fontSize = '';
   popup.classList.remove('hidden');
   requestAnimationFrame(() => popup.classList.add('show'));
-
   setTimeout(() => {
     popup.classList.remove('show');
-    setTimeout(() => {
-      popup.classList.add('hidden');
-      flipCardsToFace();
-    }, 350);
+    setTimeout(() => { popup.classList.add('hidden'); flipCardsToFace(); }, 350);
   }, 2500);
 }
 
-// ── FLIP CARDS: swap src from front to back one by one ──
+// ── FLIP CARDS ──
 function flipCardsToFace() {
   const cards = document.querySelectorAll('#faces-row .face-card');
   cards.forEach((card, i) => {
@@ -170,10 +191,11 @@ function handleCardClick(index, containerId) {
   if (containerId === 'faces-row') {
     if (pickedThisRound) return;
     const card = document.querySelector(`#faces-row .face-card[data-index="${index}"]`);
-    if (card && card.classList.contains('locked') && !card.classList.contains('face-up')) return;
+    if (!card || card.classList.contains('locked')) return;
+    if (usedFaces.has(index)) return; // already used this face
     submitPick(index);
   } else if (containerId === 'final-faces-row') {
-    handleFinalFacePick(index);
+    handleFinalCardPick(index);
   }
 }
 
@@ -184,29 +206,31 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
 
   document.getElementById('hdr-round').textContent = `${round} / ${totalRounds}`;
   document.getElementById('status-bar').textContent = '';
-
-  // Clear question until popup closes
   document.getElementById('question-text').textContent = '';
 
-  // Lock cards during popup
-  document.querySelectorAll('#faces-row .face-card').forEach(c => {
-    c.classList.remove('my-pick','opp-pick','both-pick');
-    c.classList.add('locked');
+  // Reset card states but keep used faces greyed
+  document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
+    c.classList.remove('my-pick','opp-pick','both-pick','locked');
+    if (usedFaces.has(i)) {
+      c.classList.add('used-face');
+      c.classList.add('locked');
+    }
   });
 
   highlightActiveSlot(round);
 
-  // Show TELL 1 / TELL 2 etc popup with bell, then start round
   showRoundPopup(round, () => {
     document.getElementById('question-text').textContent = question;
-
-    // Unlock cards
-    document.querySelectorAll('#faces-row .face-card').forEach(c => {
-      c.classList.remove('locked');
+    // Unlock non-used faces
+    document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
+      if (!usedFaces.has(i)) c.classList.remove('locked');
     });
-
     startTimer('timer-fill', 15, () => {
-      if (!pickedThisRound) submitPick(0);
+      if (!pickedThisRound) {
+        // Auto pick first available face
+        const available = [...Array(5).keys()].find(i => !usedFaces.has(i));
+        submitPick(available !== undefined ? available : 0);
+      }
     });
   });
 });
@@ -216,10 +240,11 @@ function submitPick(faceIndex) {
   pickedThisRound = true;
   stopTimer();
   myPicks[currentRound] = faceIndex;
+  usedFaces.add(faceIndex);
 
   document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
-    c.classList.toggle('my-pick', i === faceIndex);
     c.classList.add('locked');
+    c.classList.toggle('my-pick', i === faceIndex);
   });
 
   document.getElementById('status-bar').textContent = 'WAITING FOR OPPONENT…';
@@ -244,15 +269,8 @@ socket.on('round_reveal', ({ round, myPicks: mp, oppPicks: op }) => {
   oppPicks = op;
   stopTimer();
   document.getElementById('status-bar').textContent = '';
-  revealStripRow(round, myPicks, oppPicks);
+  revealStripRow(round, mp, op);
 });
-
-function countCorrect(picks) {
-  if (!gameData) return 0;
-  let c = 0;
-  gameData.questions.forEach((q, i) => { if (picks[i + 1] === q.answerIndex) c++; });
-  return c;
-}
 
 // ── UNIFIED STRIP ──
 function renderStrip() {
@@ -263,13 +281,13 @@ function renderStrip() {
     row.className = 'strip-row';
     row.id = `strip-row-${i}`;
     row.innerHTML = `
-      <div class="strip-cell strip-cell-left" id="strip-me-${i}">
+      <div class="strip-cell strip-cell-left" id="strip-left-${i}">
         <div class="strip-thumb"></div>
       </div>
       <div class="strip-cell strip-cell-mid" id="strip-name-${i}">
         <span class="strip-qnum">Q${i}</span>
       </div>
-      <div class="strip-cell strip-cell-right" id="strip-opp-${i}">
+      <div class="strip-cell strip-cell-right" id="strip-right-${i}">
         <div class="strip-thumb"></div>
       </div>
     `;
@@ -277,32 +295,35 @@ function renderStrip() {
   }
 }
 
-function revealStripRow(round, myPicks, oppPicks) {
-  // Middle: reveal the question name
+function revealStripRow(round, mp, op) {
   const q = gameData.questions[round - 1];
   const answerFace = gameData.faces[q.answerIndex];
+
+  // Middle: answer name
   const midEl = document.getElementById(`strip-name-${round}`);
   if (midEl) {
     midEl.innerHTML = `<span class="strip-answer-name">${answerFace.name}</span>`;
     midEl.classList.add('slot-drop');
   }
 
-  // Left: my pick for this round
-  const myFaceIdx = myPicks[round];
-  const myEl = document.getElementById(`strip-me-${round}`);
-  if (myEl && myFaceIdx !== undefined) {
-    const face = gameData.faces[myFaceIdx];
-    myEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
-    myEl.querySelector('.strip-thumb').title = face.name;
-  }
+  // Left = pink player (creator), Right = blue player (joiner)
+  // myColour tells us which side we are
+  const pinkPicks = myColour === 'pink' ? mp : op;
+  const bluePicks = myColour === 'pink' ? op : mp;
 
-  // Right: opponent's pick for this round
-  const oppFaceIdx = oppPicks[round];
-  const oppEl = document.getElementById(`strip-opp-${round}`);
-  if (oppEl && oppFaceIdx !== undefined) {
-    const face = gameData.faces[oppFaceIdx];
-    oppEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
-    oppEl.querySelector('.strip-thumb').title = face.name;
+  const pinkIdx = pinkPicks[round];
+  const blueIdx = bluePicks[round];
+
+  const leftEl = document.getElementById(`strip-left-${round}`);
+  const rightEl = document.getElementById(`strip-right-${round}`);
+
+  if (leftEl && pinkIdx !== undefined) {
+    const face = gameData.faces[pinkIdx];
+    leftEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}" title="${face.name}">`;
+  }
+  if (rightEl && blueIdx !== undefined) {
+    const face = gameData.faces[blueIdx];
+    rightEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}" title="${face.name}">`;
   }
 }
 
@@ -317,56 +338,90 @@ socket.on('final_phase', ({ myPicks: mp, oppPicks: op, questions }) => {
   myPicks = mp;
   oppPicks = op;
   finalPicks = { ...mp };
-  finalSelectedQ = null;
-  show('screen-final');
-  renderCards('final-faces-row', 'back');
-  document.querySelectorAll('#final-faces-row .face-card').forEach(c => c.classList.add('locked'));
-  renderFinalQuestions(questions);
-  startTimer('final-timer-fill', 15, submitFinal);
+  finalOppPicks = op;
+  finalSelectedName = null;
+
+  // Popup first
+  showGenericPopup('You can change your\nselections now!', () => {
+    show('screen-final');
+    renderFinalPhase(questions);
+    startTimer('final-timer-fill', 15, submitFinal);
+  });
 });
 
-function renderFinalQuestions(questions) {
-  const list = document.getElementById('final-questions-list');
-  list.innerHTML = '';
+function renderFinalPhase(questions) {
+  // ── Face cards row (selectable targets) ──
+  renderCards('final-faces-row', 'back');
+  document.querySelectorAll('#final-faces-row .face-card').forEach(c => c.classList.add('locked'));
+
+  // ── My name assignments ──
+  const myList = document.getElementById('final-my-names');
+  myList.innerHTML = '';
   questions.forEach((q, i) => {
     const round = i + 1;
     const pick = finalPicks[round];
     const face = pick !== undefined ? gameData.faces[pick] : null;
-    const row = document.createElement('div');
-    row.className = 'final-q-row';
-    row.id = `fq-${round}`;
-    row.innerHTML = `
-      <span class="fq-num">Q${round}</span>
-      <div class="fq-thumb">${face ? `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">` : ''}</div>
-      <span class="fq-text">${q}</span>
-      <span class="fq-change">CHANGE</span>
+    const item = document.createElement('div');
+    item.className = 'final-name-item';
+    item.id = `fn-${round}`;
+    item.innerHTML = `
+      <div class="fn-thumb">${face ? `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">` : '<div class="fn-empty"></div>'}</div>
+      <span class="fn-name">${answerName(q)}</span>
     `;
-    row.addEventListener('click', () => selectFinalQuestion(round));
-    list.appendChild(row);
+    item.addEventListener('click', () => selectFinalName(round));
+    myList.appendChild(item);
+  });
+
+  // ── Opponent's choices ──
+  const oppLabel = document.getElementById('final-opp-label');
+  oppLabel.textContent = `${oppName.toUpperCase()}'S CHOICES`;
+  const oppList = document.getElementById('final-opp-names');
+  oppList.innerHTML = '';
+  questions.forEach((q, i) => {
+    const round = i + 1;
+    const pick = finalOppPicks[round];
+    const face = pick !== undefined ? gameData.faces[pick] : null;
+    const item = document.createElement('div');
+    item.className = 'final-opp-item';
+    item.innerHTML = `
+      <div class="fn-thumb">${face ? `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">` : ''}</div>
+      <span class="fn-name fn-opp">${answerName(q)}</span>
+    `;
+    oppList.appendChild(item);
   });
 }
 
-function selectFinalQuestion(round) {
-  finalSelectedQ = round;
-  document.querySelectorAll('.final-q-row').forEach(r => r.classList.remove('selected'));
-  document.getElementById(`fq-${round}`).classList.add('selected');
+function answerName(questionText) {
+  // Extract just the name — everything before the first comma
+  return questionText.split(',')[0].trim();
+}
+
+function selectFinalName(round) {
+  finalSelectedName = round;
+  document.querySelectorAll('.final-name-item').forEach(r => r.classList.remove('selected'));
+  document.getElementById(`fn-${round}`).classList.add('selected');
+  // Unlock face cards
   document.querySelectorAll('#final-faces-row .face-card').forEach((c, i) => {
-    c.classList.remove('locked','my-pick','final-select-target');
+    c.classList.remove('locked','final-select-target','my-pick');
     if (finalPicks[round] === i) c.classList.add('my-pick');
     else c.classList.add('final-select-target');
   });
 }
 
-function handleFinalFacePick(index) {
-  if (finalSelectedQ === null) return;
-  finalPicks[finalSelectedQ] = index;
+function handleFinalCardPick(index) {
+  if (finalSelectedName === null) return;
+  finalPicks[finalSelectedName] = index;
   const face = gameData.faces[index];
-  const row = document.getElementById(`fq-${finalSelectedQ}`);
-  if (row) row.querySelector('.fq-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
-  finalSelectedQ = null;
-  document.querySelectorAll('.final-q-row').forEach(r => r.classList.remove('selected'));
+
+  // Update thumb in name list
+  const item = document.getElementById(`fn-${finalSelectedName}`);
+  if (item) item.querySelector('.fn-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
+
+  // Reset
+  finalSelectedName = null;
+  document.querySelectorAll('.final-name-item').forEach(r => r.classList.remove('selected'));
   document.querySelectorAll('#final-faces-row .face-card').forEach(c => {
-    c.classList.remove('my-pick','final-select-target');
+    c.classList.remove('final-select-target','my-pick');
     c.classList.add('locked');
   });
 }
@@ -385,9 +440,9 @@ socket.on('game_over', ({ won, draw, myScore, oppScore, myName: mn, oppName: on,
   else          { verdict.textContent = 'YOU LOSE'; verdict.className = 'lose'; }
 
   document.getElementById('result-scores').innerHTML = `
-    <div class="rs-player"><span class="rs-name">${mn.toUpperCase()}</span><span class="rs-num">${myScore}</span></div>
+    <div class="rs-player"><span class="rs-name" style="color:#e75480">${mn.toUpperCase()}</span><span class="rs-num">${myScore}</span></div>
     <span class="rs-vs">VS</span>
-    <div class="rs-player"><span class="rs-name">${on.toUpperCase()}</span><span class="rs-num">${oppScore}</span></div>
+    <div class="rs-player"><span class="rs-name" style="color:#3498db">${on.toUpperCase()}</span><span class="rs-num">${oppScore}</span></div>
   `;
 
   document.getElementById('result-breakdown').innerHTML = questions.map((q, i) => {
@@ -430,7 +485,6 @@ function startTimer(fillId, seconds, onExpire) {
     fill.style.width = pct + '%';
     if (pct < 40) {
       fill.style.background = 'var(--red)';
-      // Beep every second in the last 6 seconds
       if (ticks % 10 === 0 && ticks > 0) beep();
     } else {
       fill.style.background = 'var(--gold)';
@@ -439,7 +493,11 @@ function startTimer(fillId, seconds, onExpire) {
   }, 100);
 }
 
-// ── BEEP via Web Audio API ──
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+// ── AUDIO ──
 let _audioCtx = null;
 function getAudioCtx() {
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -451,75 +509,66 @@ function beep() {
     const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    osc.connect(gain); gain.connect(ctx.destination);
     osc.frequency.value = 880;
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.08);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
   } catch(e) {}
 }
 
-// ── BOXING BELL ──
 function boxingBell() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-
-    // Strike 1
-    ringBell(ctx, t);
-    // Strike 2
-    ringBell(ctx, t + 0.6);
-    // Strike 3
-    ringBell(ctx, t + 1.2);
+    ringBell(ctx, t); ringBell(ctx, t + 0.6); ringBell(ctx, t + 1.2);
   } catch(e) {}
 }
 
 function ringBell(ctx, startTime) {
-  // Bell body — high metallic tone with long decay
   [440, 880, 1320, 2200].forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = freq;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = freq;
     const vol = [0.4, 0.3, 0.15, 0.08][i];
     gain.gain.setValueAtTime(vol, startTime);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8);
-    osc.start(startTime);
-    osc.stop(startTime + 1.8);
+    osc.start(startTime); osc.stop(startTime + 1.8);
   });
 }
 
-// ── ROUND POPUP ──
+// ── POPUPS ──
 function showRoundPopup(round, callback) {
   boxingBell();
+  showPopupText(`TELL ${round}`, '58px', 1800, callback);
+}
+
+function showGenericPopup(text, callback) {
+  showPopupText(text, '28px', 2500, callback);
+}
+
+function showPopupText(text, fontSize, duration, callback) {
   const popup = document.getElementById('popup-letsplay');
-  const text = popup.querySelector('.popup-text');
+  const textEl = popup.querySelector('.popup-text');
   const img = popup.querySelector('img');
   img.style.display = 'none';
-  text.textContent = `TELL ${round}`;
-  text.style.fontSize = '52px';
-  text.style.letterSpacing = '0.06em';
+  textEl.textContent = text;
+  textEl.style.fontSize = fontSize;
+  textEl.style.whiteSpace = 'pre-line';
+  textEl.style.textAlign = 'center';
   popup.classList.remove('hidden');
   requestAnimationFrame(() => popup.classList.add('show'));
-
   setTimeout(() => {
     popup.classList.remove('show');
     setTimeout(() => {
       popup.classList.add('hidden');
       img.style.display = '';
-      text.style.fontSize = '';
-      text.style.letterSpacing = '';
+      textEl.style.fontSize = '';
+      textEl.style.whiteSpace = '';
       if (callback) callback();
     }, 300);
-  }, 1800);
-}
-
-function stopTimer() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }, duration);
 }
 
 // ── SCREEN SWITCHER ──
@@ -531,15 +580,13 @@ function show(id) {
 function launchFireworks() {
   const canvas = document.getElementById('fireworks-canvas');
   canvas.style.display = 'block';
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
   const particles = [];
   const colours = ['#2D7A7A','#D4A843','#e75480','#27ae60','#3498db'];
   function burst(x, y) {
     for (let i = 0; i < 80; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 6 + 2;
+      const angle = Math.random() * Math.PI * 2, speed = Math.random() * 6 + 2;
       particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, alpha: 1, colour: colours[Math.floor(Math.random()*colours.length)], size: Math.random()*4+2 });
     }
   }

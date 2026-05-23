@@ -49,12 +49,12 @@
 <div id="screen-game" class="screen">
   <div id="game-header">
     <div class="score-block">
-      <span class="score-name" id="hdr-my-name">YOU</span>
+      <span class="score-name pulse-pink" id="hdr-my-name">YOU</span>
       <span class="score-num" id="hdr-my-score">0</span>
     </div>
     <div class="round-badge" id="hdr-round">1 / 5</div>
     <div class="score-block right">
-      <span class="score-name" id="hdr-opp-name">OPP</span>
+      <span class="score-name pulse-blue" id="hdr-opp-name">OPP</span>
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
@@ -63,9 +63,9 @@
   <div id="faces-row"></div>
   <div id="answer-strips">
     <div class="strip-header">
-      <span class="strip-header-label" id="strip-my-name">YOU</span>
+      <span class="strip-header-label pulse-pink" id="strip-my-name">YOU</span>
       <span class="strip-header-mid"></span>
-      <span class="strip-header-label" id="strip-opp-name">OPP</span>
+      <span class="strip-header-label strip-header-right pulse-blue" id="strip-opp-name">OPP</span>
     </div>
     <div id="answer-strip"></div>
   </div>
@@ -76,11 +76,20 @@
 <div id="screen-final" class="screen">
   <div id="final-header">
     <h2 class="final-title">FINAL CHANCE</h2>
-    <p class="final-sub">Change any answer — 10 seconds</p>
+    <p class="final-sub">Tap a name → tap a face to reassign</p>
   </div>
   <div id="final-timer-track"><div id="final-timer-fill"></div></div>
   <div id="final-faces-row"></div>
-  <div id="final-questions-list"></div>
+
+  <div id="final-my-section">
+    <p class="final-section-label">YOUR PICKS — tap to change</p>
+    <div id="final-my-names"></div>
+  </div>
+
+  <div id="final-opp-section">
+    <p class="final-section-label" id="final-opp-label">OPPONENT'S CHOICES</p>
+    <div id="final-opp-names"></div>
+  </div>
 </div>
 
 <!-- ══ RESULT ══ -->

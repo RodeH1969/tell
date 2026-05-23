@@ -66,12 +66,14 @@ io.on('connection', (socket) => {
     io.to(p1.id).emit('game_start', {
       myName: p1.name,
       oppName: p2.name,
-      game: room.game
+      game: room.game,
+      playerIndex: 0
     });
     io.to(p2.id).emit('game_start', {
       myName: p2.name,
       oppName: p1.name,
-      game: room.game
+      game: room.game,
+      playerIndex: 1
     });
 
     room.phase = 'playing';
