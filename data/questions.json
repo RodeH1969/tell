@@ -3,33 +3,18 @@
     "gameId": "Game1",
     "title": "18th Century Greats",
     "faces": [
-      { "file": "Adam Smith.png",         "name": "Adam Smith" },
-      { "file": "Benjamin Franklin.png",  "name": "Benjamin Franklin" },
-      { "file": "George Washington.png",  "name": "George Washington" },
-      { "file": "Mozart.png",             "name": "Mozart" },
-      { "file": "James Cook.png",         "name": "James Cook" }
+      { "name": "Adam Smith",        "front": "Adam Smith - front.png",        "back": "Adam Smith - back.png" },
+      { "name": "Benjamin Franklin", "front": "Benjamin Franklin - front.png", "back": "Benjamin Franklin - back.png" },
+      { "name": "George Washington", "front": "George Washington - front.png", "back": "George Washington - back.png" },
+      { "name": "Mozart",            "front": "Mozart - front.png",            "back": "Mozart - back.png" },
+      { "name": "James Cook",        "front": "James Cook - front.png",        "back": "James Cook - back.png" }
     ],
     "questions": [
-      {
-        "text": "Who is the 18th-century Scottish philosopher and economist known as the \"Father of Modern Economics\" who wrote The Wealth of Nations?",
-        "answerIndex": 0
-      },
-      {
-        "text": "Who is the American polymath, inventor, scientist, and Founding Father who famously helped draft the United States Declaration of Independence?",
-        "answerIndex": 1
-      },
-      {
-        "text": "Who is the military commander of the Continental Army during the American Revolutionary War and served as the first President of the United States?",
-        "answerIndex": 2
-      },
-      {
-        "text": "Who is the 18th-century Austrian musical prodigy and prolific composer who created over 600 works, ranking among the most influential figures in classical music?",
-        "answerIndex": 3
-      },
-      {
-        "text": "Who is the 18th-century British Royal Navy captain, navigator, and cartographer who led the first European expedition to chart the east coast of Australia?",
-        "answerIndex": 4
-      }
+      { "text": "Who is the 18th-century Scottish philosopher and economist known as the \"Father of Modern Economics\" who wrote The Wealth of Nations?", "answerIndex": 0 },
+      { "text": "Who is the American polymath, inventor, scientist, and Founding Father who famously helped draft the United States Declaration of Independence?", "answerIndex": 1 },
+      { "text": "Who is the military commander of the Continental Army during the American Revolutionary War and served as the first President of the United States?", "answerIndex": 2 },
+      { "text": "Who is the 18th-century Austrian musical prodigy and prolific composer who created over 600 works, ranking among the most influential figures in classical music?", "answerIndex": 3 },
+      { "text": "Who is the 18th-century British Royal Navy captain, navigator, and cartographer who led the first European expedition to chart the east coast of Australia?", "answerIndex": 4 }
     ]
   }
 ]

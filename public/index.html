@@ -16,46 +16,38 @@
   <p class="splash-tag">Five faces. One truth. No mercy.</p>
 </div>
 
-<!-- ══ LOBBY ══ -->
-<div id="screen-lobby" class="screen">
+<!-- ══ CREATOR LOBBY: just name + one button ══ -->
+<div id="screen-creator" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
-  <div id="lobby-main">
-    <button class="btn-primary" onclick="showPanel('panel-create')">CREATE GAME</button>
-    <button class="btn-outline" onclick="showPanel('panel-join')">JOIN GAME</button>
-  </div>
-
-  <div id="panel-create" class="name-panel hidden">
-    <label class="field-label">YOUR NAME</label>
-    <input id="input-create-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
-    <button id="btn-create" class="btn-primary" onclick="createGame()" disabled>CREATE ROOM</button>
-    <button class="btn-ghost" onclick="showPanel(null)">← Back</button>
-  </div>
-
-  <div id="panel-join" class="name-panel hidden">
-    <label class="field-label">YOUR NAME</label>
-    <input id="input-join-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
-    <button id="btn-join" class="btn-primary" onclick="joinGame()" disabled>JOIN NOW</button>
-    <button class="btn-ghost" onclick="showPanel(null)">← Back</button>
-  </div>
+  <label class="field-label">YOUR NAME</label>
+  <input id="input-creator-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
+  <button id="btn-challenge" class="btn-primary" onclick="createGame()" disabled>CHALLENGE A FRIEND</button>
 </div>
 
-<!-- ══ WAITING ══ -->
+<!-- ══ WAITING (creator sees this after creating) ══ -->
 <div id="screen-waiting" class="screen">
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
-  <p class="waiting-label">WAITING FOR OPPONENT</p>
+  <p class="waiting-label">CHALLENGE SENT</p>
+  <p class="waiting-sub">Share this link with your opponent</p>
   <div class="link-box">
     <span id="invite-link"></span>
     <button id="copy-btn" onclick="copyLink()">COPY</button>
   </div>
-  <div class="waiting-dots">
-    <span></span><span></span><span></span>
-  </div>
+  <p class="waiting-sub" style="margin-top:20px">Waiting for them to join…</p>
+  <div class="waiting-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- ══ JOINER LOBBY: arrives via link, just needs name ══ -->
+<div id="screen-joiner" class="screen">
+  <img src="logo.jpeg" alt="TELL" class="lobby-logo">
+  <p class="join-challenge-msg">You've been challenged!</p>
+  <label class="field-label">YOUR NAME</label>
+  <input id="input-joiner-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
+  <button id="btn-join" class="btn-primary" onclick="joinGame()" disabled>JOIN NOW</button>
 </div>
 
 <!-- ══ GAME ══ -->
 <div id="screen-game" class="screen">
-
-  <!-- Header -->
   <div id="game-header">
     <div class="score-block">
       <span class="score-name" id="hdr-my-name">YOU</span>
@@ -67,30 +59,19 @@
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
-
-  <!-- Timer -->
   <div id="timer-track"><div id="timer-fill"></div></div>
-
-  <!-- Question -->
-  <div id="question-box">
-    <p id="question-text"></p>
-  </div>
-
-  <!-- Faces -->
+  <div id="question-box"><p id="question-text"></p></div>
   <div id="faces-row"></div>
-
-  <!-- Answer strips -->
   <div id="answer-strips">
-    <div class="strip" id="strip-me">
+    <div class="strip">
       <div class="strip-label" id="strip-my-name">YOU</div>
       <div class="strip-slots" id="slots-me"></div>
     </div>
-    <div class="strip" id="strip-opp">
+    <div class="strip">
       <div class="strip-label" id="strip-opp-name">OPP</div>
       <div class="strip-slots" id="slots-opp"></div>
     </div>
   </div>
-
   <div id="status-bar"></div>
 </div>
 
@@ -98,7 +79,7 @@
 <div id="screen-final" class="screen">
   <div id="final-header">
     <h2 class="final-title">FINAL CHANCE</h2>
-    <p class="final-sub">Change any answer. 10 seconds.</p>
+    <p class="final-sub">Change any answer — 10 seconds</p>
   </div>
   <div id="final-timer-track"><div id="final-timer-fill"></div></div>
   <div id="final-faces-row"></div>
@@ -114,10 +95,15 @@
   <button class="btn-primary share-btn" onclick="shareResult()">Come play TELL with me →</button>
 </div>
 
-<!-- Fireworks canvas (winner only) -->
+<!-- Popup: Let's Play Tell -->
+<div id="popup-letsplay" class="popup hidden">
+  <div class="popup-inner">
+    <img src="logo.jpeg" alt="TELL" style="width:80px;margin-bottom:12px">
+    <p class="popup-text">Let's Play Tell!</p>
+  </div>
+</div>
+
 <canvas id="fireworks-canvas"></canvas>
-
-
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
