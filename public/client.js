@@ -24,7 +24,7 @@ function startMusic() {
   if (_music) return;
   _music = new Audio('/telltheme.mp3');
   _music.loop = true;
-  _music.volume = 0.4;
+  _music.volume = 0.35;
   _music.play().catch(() => {});
 }
 function stopMusic() {
@@ -125,16 +125,36 @@ function shareInvite() {
 
 // ── QUESTION AUDIO ──
 let _questionAudio = null;
+let _audioUnlocked = false;
+
+// Unlock audio on first user interaction (required for iOS)
+function unlockAudio() {
+  if (_audioUnlocked) return;
+  _audioUnlocked = true;
+  const buf = new Audio();
+  buf.play().catch(() => {});
+}
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
 function playQuestion(filename) {
   if (_questionAudio) { _questionAudio.pause(); _questionAudio = null; }
   _questionAudio = new Audio(`/audio/${filename}`);
-  _questionAudio.volume = 1.0;
-  // Duck theme music while question plays
-  if (_music) _music.volume = 0.15;
-  _questionAudio.play().catch(() => {});
+  _questionAudio.volume = 0.85;
+  if (_music) _music.volume = 0.12;
   _questionAudio.onended = () => {
-    if (_music) _music.volume = 0.4;
+    if (_music) _music.volume = 0.35;
+    _questionAudio = null;
   };
+  const tryPlay = () => {
+    const p = _questionAudio ? _questionAudio.play() : null;
+    if (p) p.catch(err => {
+      console.log('Question audio blocked, retrying...', err);
+      setTimeout(() => { if (_questionAudio) _questionAudio.play().catch(() => {}); }, 500);
+    });
+  };
+  // Small delay to let bell sound finish and iOS unlock settle
+  setTimeout(tryPlay, 200);
 }
 
 // ── CARD IMAGE PATH ──
@@ -520,7 +540,11 @@ function ringBell(ctx, st) {
 }
 
 // ── POPUPS ──
-function showRoundPopup(round, callback) { boxingBell(); showPopupText(`TELL ${round}`, '58px', 1800, callback); }
+function showRoundPopup(round, callback) {
+  unlockAudio();
+  boxingBell();
+  showPopupText(`TELL ${round}`, '58px', 1800, callback);
+}
 function showGenericPopup(text, callback) { showPopupText(text, '28px', 2500, callback); }
 function showPopupText(text, fontSize, duration, callback) {
   const popup = document.getElementById('popup-letsplay');
