@@ -1,15 +1,15 @@
 {
   "name": "tell",
   "version": "2.0.0",
-  "description": "TELL — Five faces. One truth. No mercy.",
+  "description": "TELL \u2014 Five faces. One truth. No mercy.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.6.1"
+    "socket.io": "4.6.1",
+    "firebase-admin": "^12.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
