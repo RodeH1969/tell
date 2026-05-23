@@ -323,6 +323,13 @@ html, body {
   width: 100%;
   max-width: 600px;
   margin-bottom: 16px;
+  align-items: stretch;
+}
+
+/* Force cards taller */
+#faces-row .face-card,
+#final-faces-row .face-card {
+  min-height: min(28vw, 160px);
 }
 
 .face-card {
@@ -768,6 +775,7 @@ html, body {
 
 .face-card.flipping img {
   transform: scaleX(0);
+  transition: transform 0.35s ease;
 }
 
 .face-card.face-up img {

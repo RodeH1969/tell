@@ -128,8 +128,8 @@ function flipCardsToFace() {
         img.src = `/data/Game%201%20Cards/${encodeURIComponent(backFile)}`;
         card.classList.remove('flipping');
         card.classList.add('face-up');
-      }, 200);
-    }, i * 200);
+      }, 350);
+    }, i * 450);
   });
 }
 
@@ -178,7 +178,7 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
     c.classList.remove('my-pick','opp-pick','both-pick','locked');
   });
 
-  startTimer('timer-fill', 10, () => {
+  startTimer('timer-fill', 15, () => {
     if (!pickedThisRound) submitPick(0);
   });
 });
@@ -280,7 +280,7 @@ socket.on('final_phase', ({ myPicks: mp, oppPicks: op, questions }) => {
   renderCards('final-faces-row', 'back');
   document.querySelectorAll('#final-faces-row .face-card').forEach(c => c.classList.add('locked'));
   renderFinalQuestions(questions);
-  startTimer('final-timer-fill', 10, submitFinal);
+  startTimer('final-timer-fill', 15, submitFinal);
 });
 
 function renderFinalQuestions(questions) {
@@ -386,9 +386,32 @@ function startTimer(fillId, seconds, onExpire) {
     ticks--;
     const pct = (ticks / total) * 100;
     fill.style.width = pct + '%';
-    if (pct < 30) fill.style.background = 'var(--red)';
+    if (pct < 40) {
+      fill.style.background = 'var(--red)';
+      // Beep every second in the last 6 seconds
+      if (ticks % 10 === 0 && ticks > 0) beep();
+    } else {
+      fill.style.background = 'var(--gold)';
+    }
     if (ticks <= 0) { stopTimer(); onExpire(); }
   }, 100);
+}
+
+// ── BEEP via Web Audio API ──
+let _audioCtx = null;
+function beep() {
+  try {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(_audioCtx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.08);
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + 0.08);
+  } catch(e) {}
 }
 
 function stopTimer() {
