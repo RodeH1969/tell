@@ -868,3 +868,114 @@ html, body {
   gap: 12px;
   margin-top: 16px;
 }
+
+/* ══ UNIFIED ANSWER STRIP ══ */
+#answer-strips {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 10px;
+}
+
+.strip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px 6px;
+}
+
+.strip-header-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--mid);
+  flex: 1;
+}
+
+.strip-header-label:last-child {
+  text-align: right;
+}
+
+.strip-header-mid {
+  flex: 1.4;
+}
+
+#answer-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.strip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 8px;
+  min-height: 44px;
+  transition: border-color 0.2s;
+}
+
+.strip-row.active-round {
+  border-color: var(--gold);
+  background: var(--gold-light);
+}
+
+.strip-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strip-cell-left {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.strip-cell-right {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.strip-cell-mid {
+  flex: 1.4;
+  justify-content: center;
+  text-align: center;
+}
+
+.strip-thumb {
+  width: 28px;
+  height: 34px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.strip-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.strip-qnum {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--mid);
+}
+
+.strip-answer-name {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1.2;
+}
+
+/* ══ ROUND POPUP BOXING STYLE ══ */
+.popup-text.round-text {
+  font-size: 52px;
+  letter-spacing: 0.06em;
+}

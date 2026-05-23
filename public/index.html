@@ -29,7 +29,8 @@
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
   <button class="btn-primary share-invite-btn" onclick="shareInvite()">SEND CHALLENGE →</button>
   <div id="waiting-status" class="hidden">
-    <p class="waiting-sub">Waiting for them to join…</p>
+    <p class="waiting-label">CHALLENGE SENT</p>
+    <p class="waiting-sub">Waiting for your opponent to join…</p>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 </div>
@@ -61,14 +62,12 @@
   <div id="question-box"><p id="question-text"></p></div>
   <div id="faces-row"></div>
   <div id="answer-strips">
-    <div class="strip">
-      <div class="strip-label" id="strip-my-name">YOU</div>
-      <div class="strip-slots" id="slots-me"></div>
+    <div class="strip-header">
+      <span class="strip-header-label" id="strip-my-name">YOU</span>
+      <span class="strip-header-mid"></span>
+      <span class="strip-header-label" id="strip-opp-name">OPP</span>
     </div>
-    <div class="strip">
-      <div class="strip-label" id="strip-opp-name">OPP</div>
-      <div class="strip-slots" id="slots-opp"></div>
-    </div>
+    <div id="answer-strip"></div>
   </div>
   <div id="status-bar"></div>
 </div>

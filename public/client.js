@@ -78,12 +78,14 @@ socket.on('join_error', ({ message }) => {
 function shareInvite() {
   const link = window._inviteLink;
   const showWaiting = () => {
+    // Hide the share button, show waiting state
+    document.querySelector('.share-invite-btn').classList.add('hidden');
     document.getElementById('waiting-status').classList.remove('hidden');
   };
   if (navigator.share) {
     navigator.share({ title: 'TELL', text: 'I challenge you to a game of TELL 👀', url: link })
       .then(showWaiting)
-      .catch(() => showWaiting()); // show waiting even if they cancel share
+      .catch(() => showWaiting());
   } else {
     navigator.clipboard.writeText(link).then(() => {
       alert('Link copied! Send it to your opponent.');
@@ -108,8 +110,7 @@ socket.on('game_start', ({ myName: mn, oppName: on, game }) => {
 
   // Render cards showing FRONT (logo side) — locked
   renderCards('faces-row', 'front');
-  renderSlots('slots-me');
-  renderSlots('slots-opp');
+  renderStrip();
 
   // After 1s show popup, then flip cards to back (faces)
   setTimeout(showLetsPlay, 1000);
@@ -230,10 +231,7 @@ socket.on('round_reveal', ({ round, myPicks: mp, oppPicks: op }) => {
   oppPicks = op;
   stopTimer();
   document.getElementById('status-bar').textContent = '';
-  updateStrip('slots-me', myPicks, round);
-  updateStrip('slots-opp', oppPicks, round);
-  document.getElementById('hdr-my-score').textContent = countCorrect(myPicks);
-  document.getElementById('hdr-opp-score').textContent = countCorrect(oppPicks);
+  revealStripRow(round, myPicks, oppPicks);
 });
 
 function countCorrect(picks) {
@@ -243,45 +241,62 @@ function countCorrect(picks) {
   return c;
 }
 
-// ── SLOTS ──
-function renderSlots(containerId) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
+// ── UNIFIED STRIP ──
+function renderStrip() {
+  const strip = document.getElementById('answer-strip');
+  strip.innerHTML = '';
   for (let i = 1; i <= 5; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'slot';
-    slot.id = `${containerId}-q${i}`;
-    slot.innerHTML = `<span class="slot-q">Q${i}</span><div class="slot-thumb"></div><span class="slot-name">—</span>`;
-    el.appendChild(slot);
+    const row = document.createElement('div');
+    row.className = 'strip-row';
+    row.id = `strip-row-${i}`;
+    row.innerHTML = `
+      <div class="strip-cell strip-cell-left" id="strip-me-${i}">
+        <div class="strip-thumb"></div>
+      </div>
+      <div class="strip-cell strip-cell-mid" id="strip-name-${i}">
+        <span class="strip-qnum">Q${i}</span>
+      </div>
+      <div class="strip-cell strip-cell-right" id="strip-opp-${i}">
+        <div class="strip-thumb"></div>
+      </div>
+    `;
+    strip.appendChild(row);
   }
 }
 
-function updateStrip(containerId, picks, highlightRound) {
-  for (let i = 1; i <= 5; i++) {
-    const slot = document.getElementById(`${containerId}-q${i}`);
-    if (!slot || picks[i] === undefined) continue;
-    slot.classList.remove('active-round');
-    const face = gameData.faces[picks[i]];
-    const isCorrect = picks[i] === gameData.questions[i - 1].answerIndex;
-    slot.querySelector('.slot-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
-    slot.querySelector('.slot-name').textContent = face.name;
-    let tick = slot.querySelector('.slot-tick');
-    if (!tick) { tick = document.createElement('span'); tick.className = 'slot-tick'; slot.appendChild(tick); }
-    tick.textContent = isCorrect ? '✓' : '';
-    slot.classList.add('slot-drop');
+function revealStripRow(round, myPicks, oppPicks) {
+  // Middle: reveal the question name
+  const q = gameData.questions[round - 1];
+  const answerFace = gameData.faces[q.answerIndex];
+  const midEl = document.getElementById(`strip-name-${round}`);
+  if (midEl) {
+    midEl.innerHTML = `<span class="strip-answer-name">${answerFace.name}</span>`;
+    midEl.classList.add('slot-drop');
   }
-  if (highlightRound && highlightRound <= 5) {
-    const active = document.getElementById(`${containerId}-q${highlightRound}`);
-    if (active) active.classList.add('active-round');
+
+  // Left: my pick for this round
+  const myFaceIdx = myPicks[round];
+  const myEl = document.getElementById(`strip-me-${round}`);
+  if (myEl && myFaceIdx !== undefined) {
+    const face = gameData.faces[myFaceIdx];
+    myEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
+    myEl.querySelector('.strip-thumb').title = face.name;
+  }
+
+  // Right: opponent's pick for this round
+  const oppFaceIdx = oppPicks[round];
+  const oppEl = document.getElementById(`strip-opp-${round}`);
+  if (oppEl && oppFaceIdx !== undefined) {
+    const face = gameData.faces[oppFaceIdx];
+    oppEl.querySelector('.strip-thumb').innerHTML = `<img src="/data/Game%201%20Cards/${encodeURIComponent(face.back)}" alt="${face.name}">`;
+    oppEl.querySelector('.strip-thumb').title = face.name;
   }
 }
 
 function highlightActiveSlot(round) {
-  document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-round'));
-  [`slots-me-q${round}`, `slots-opp-q${round}`].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active-round');
-  });
+  document.querySelectorAll('.strip-row').forEach(r => r.classList.remove('active-round'));
+  const row = document.getElementById(`strip-row-${round}`);
+  if (row) row.classList.add('active-round');
 }
 
 // ── FINAL PHASE ──
