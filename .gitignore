@@ -1,0 +1,5 @@
+node_modules/
+.env
+.DS_Store
+firebase-key.json
+tell-game-firebase-adminsdk-fbsvc-d5b2d5ee02.json
