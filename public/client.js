@@ -24,7 +24,7 @@ function startMusic() {
   if (_music) return;
   _music = new Audio('/telltheme.mp3');
   _music.loop = true;
-  _music.volume = 0.35;
+  _music.volume = 0.15;
   _music.play().catch(() => {});
 }
 function stopMusic() {
@@ -141,9 +141,9 @@ function playQuestion(filename) {
   if (_questionAudio) { _questionAudio.pause(); _questionAudio = null; }
   _questionAudio = new Audio(`/audio/${filename}`);
   _questionAudio.volume = 0.85;
-  if (_music) _music.volume = 0.12;
+  if (_music) _music.volume = 0.05;
   _questionAudio.onended = () => {
-    if (_music) _music.volume = 0.35;
+    if (_music) _music.volume = 0.15;
     _questionAudio = null;
   };
   const tryPlay = () => {
@@ -251,8 +251,13 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
 
   showRoundPopup(round, () => {
     // Play audio question
-    if (gameData.questions[round-1].audio) {
-      playQuestion(gameData.questions[round-1].audio);
+    const qData = gameData.questions[round-1];
+    const statusBar = document.getElementById('status-bar');
+    if (qData && qData.audio) {
+      if (statusBar) statusBar.textContent = '🔊 ' + qData.audio;
+      playQuestion(qData.audio);
+    } else {
+      if (statusBar) statusBar.textContent = 'NO AUDIO: ' + JSON.stringify(qData);
     }
     // Unlock non-used faces
     document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
