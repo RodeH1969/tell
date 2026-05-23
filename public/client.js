@@ -14,6 +14,19 @@ socket.on('reconnect', () => {
   }
 });
 
+// ── THEME MUSIC ──
+let _music = null;
+function startMusic() {
+  if (_music) return;
+  _music = new Audio('/telltheme.mp3');
+  _music.loop = true;
+  _music.volume = 0.4;
+  _music.play().catch(() => {});
+}
+function stopMusic() {
+  if (_music) { _music.pause(); _music.currentTime = 0; _music = null; }
+}
+
 // ── STATE ──
 let myName = '', oppName = '', myColour = 'pink';
 let gameData = null;
@@ -70,6 +83,7 @@ socket.on('room_created', ({ code }) => {
 function joinGame() {
   myName = document.getElementById('input-joiner-name').value.trim();
   if (!myName || !roomCode) return;
+  startMusic();
   document.getElementById('btn-join').disabled = true;
   document.getElementById('btn-join').textContent = 'JOINING…';
   socket.emit('join_room', { name: myName, code: roomCode });
@@ -89,6 +103,7 @@ socket.on('join_error', ({ message }) => {
 
 // ── SHARE ──
 function shareInvite() {
+  startMusic();
   const link = window._inviteLink;
   const showWaiting = () => {
     document.querySelector('.share-invite-btn').classList.add('hidden');
@@ -387,6 +402,7 @@ function submitFinal() {
 
 // ── GAME OVER ──
 socket.on('game_over', ({ won, draw, myScore, oppScore, myName: mn, oppName: on, myResults, faces, questions }) => {
+  stopMusic();
   show('screen-result');
   const verdict = document.getElementById('result-verdict');
   if (draw)     { verdict.textContent = 'DRAW';     verdict.className = 'draw'; }
