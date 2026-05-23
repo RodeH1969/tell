@@ -7,7 +7,10 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  transports: ['websocket', 'polling']
+});
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,7 +34,7 @@ io.on('connection', (socket) => {
   // CREATE ROOM
   socket.on('create_room', ({ name }) => {
     const code = generateCode();
-    const game = GAMES[0]; // Game1 for now
+    const game = GAMES[Math.floor(Math.random() * GAMES.length)];
 
     rooms[code] = {
       code,
