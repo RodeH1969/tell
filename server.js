@@ -35,6 +35,7 @@ io.on('connection', (socket) => {
   socket.on('create_room', ({ name }) => {
     const code = generateCode();
     const game = GAMES[Math.floor(Math.random() * GAMES.length)];
+    console.log(`CREATE ROOM: name=${name} code=${code}`);
 
     rooms[code] = {
       code,
@@ -52,8 +53,12 @@ io.on('connection', (socket) => {
 
   // JOIN ROOM
   socket.on('join_room', ({ name, code }) => {
+    console.log(`JOIN attempt: name=${name} code=${code} existing rooms=${Object.keys(rooms).join(',')}`);
     const room = rooms[code];
-    if (!room)                    return socket.emit('join_error', { message: 'Room not found.' });
+    if (!room) {
+      console.log(`JOIN FAIL: room ${code} not found. Active rooms: ${JSON.stringify(Object.keys(rooms))}`);
+      return socket.emit('join_error', { message: 'Room not found.' });
+    }
     if (room.players.length >= 2) return socket.emit('join_error', { message: 'Room is full.' });
     if (room.phase !== 'waiting') return socket.emit('join_error', { message: 'Game already started.' });
 

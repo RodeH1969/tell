@@ -1,6 +1,24 @@
 // ── TELL client.js v5 ──
 
-const socket = io();
+const socket = io({
+  reconnection: true,
+  reconnectionDelay: 500,
+  reconnectionAttempts: 10
+});
+
+// ── RECONNECT: if socket drops and rejoins, re-attempt room join ──
+socket.on('reconnect', () => {
+  console.log('Socket reconnected');
+  // If we were trying to join a room, retry
+  if (roomCode && !gameData) {
+    const nameInput = document.getElementById('input-joiner-name');
+    const name = nameInput ? nameInput.value.trim() : myName;
+    if (name && roomCode) {
+      console.log(`Retrying join: name=${name} code=${roomCode}`);
+      socket.emit('join_room', { name, code: roomCode });
+    }
+  }
+});
 
 // ── STATE ──
 let myName = '', oppName = '', myColour = 'pink';
