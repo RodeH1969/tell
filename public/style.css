@@ -1089,3 +1089,92 @@ html, body {
 
 /* Strip header right align */
 .strip-header-right { text-align: right; }
+
+/* ══ FINAL PHASE CARD+BUTTON LAYOUT ══ */
+#screen-final {
+  overflow-y: auto;
+  padding: 12px 10px 40px;
+  gap: 0;
+  align-items: center;
+}
+
+#final-my-section, #final-opp-section {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 16px;
+}
+
+.final-cards-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.final-card-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.final-card-img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--border);
+  border: 2px solid var(--border);
+}
+
+.final-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.final-name-btn {
+  width: 100%;
+  padding: 6px 4px;
+  background: var(--white);
+  border: 2px solid var(--teal);
+  border-radius: 6px;
+  font-family: var(--serif);
+  font-size: clamp(9px, 2.5vw, 12px);
+  font-weight: 700;
+  color: var(--teal);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  line-height: 1.2;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.final-name-btn:hover {
+  background: var(--teal-light);
+}
+
+.final-name-btn.selected {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+  transform: scale(1.05);
+}
+
+.final-name-btn.swapped {
+  background: var(--teal);
+  color: white;
+  transition: none;
+}
+
+.opp-name-btn {
+  border-color: var(--border);
+  color: var(--mid);
+  cursor: default;
+  font-weight: 400;
+  background: var(--off);
+}
