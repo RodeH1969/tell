@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TELL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ SPLASH ══ -->
+<div id="screen-splash" class="screen active">
+  <img src="logo.jpeg" alt="TELL" class="splash-logo">
+  <p class="splash-tag">Five faces. One truth. No mercy.</p>
+</div>
+
+<!-- ══ LOBBY ══ -->
+<div id="screen-lobby" class="screen">
+  <img src="logo.jpeg" alt="TELL" class="lobby-logo">
+  <div id="lobby-main">
+    <button class="btn-primary" onclick="showPanel('panel-create')">CREATE GAME</button>
+    <button class="btn-outline" onclick="showPanel('panel-join')">JOIN GAME</button>
+  </div>
+
+  <div id="panel-create" class="name-panel hidden">
+    <label class="field-label">YOUR NAME</label>
+    <input id="input-create-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
+    <button id="btn-create" class="btn-primary" onclick="createGame()" disabled>CREATE ROOM</button>
+    <button class="btn-ghost" onclick="showPanel(null)">← Back</button>
+  </div>
+
+  <div id="panel-join" class="name-panel hidden">
+    <label class="field-label">YOUR NAME</label>
+    <input id="input-join-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
+    <button id="btn-join" class="btn-primary" onclick="joinGame()" disabled>JOIN NOW</button>
+    <button class="btn-ghost" onclick="showPanel(null)">← Back</button>
+  </div>
+</div>
+
+<!-- ══ WAITING ══ -->
+<div id="screen-waiting" class="screen">
+  <img src="logo.jpeg" alt="TELL" class="waiting-logo">
+  <p class="waiting-label">WAITING FOR OPPONENT</p>
+  <div class="link-box">
+    <span id="invite-link"></span>
+    <button id="copy-btn" onclick="copyLink()">COPY</button>
+  </div>
+  <div class="waiting-dots">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="screen-game" class="screen">
+
+  <!-- Header -->
+  <div id="game-header">
+    <div class="score-block">
+      <span class="score-name" id="hdr-my-name">YOU</span>
+      <span class="score-num" id="hdr-my-score">0</span>
+    </div>
+    <div class="round-badge" id="hdr-round">1 / 5</div>
+    <div class="score-block right">
+      <span class="score-name" id="hdr-opp-name">OPP</span>
+      <span class="score-num" id="hdr-opp-score">0</span>
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <div id="timer-track"><div id="timer-fill"></div></div>
+
+  <!-- Question -->
+  <div id="question-box">
+    <p id="question-text"></p>
+  </div>
+
+  <!-- Faces -->
+  <div id="faces-row"></div>
+
+  <!-- Answer strips -->
+  <div id="answer-strips">
+    <div class="strip" id="strip-me">
+      <div class="strip-label" id="strip-my-name">YOU</div>
+      <div class="strip-slots" id="slots-me"></div>
+    </div>
+    <div class="strip" id="strip-opp">
+      <div class="strip-label" id="strip-opp-name">OPP</div>
+      <div class="strip-slots" id="slots-opp"></div>
+    </div>
+  </div>
+
+  <div id="status-bar"></div>
+</div>
+
+<!-- ══ FINAL PHASE ══ -->
+<div id="screen-final" class="screen">
+  <div id="final-header">
+    <h2 class="final-title">FINAL CHANCE</h2>
+    <p class="final-sub">Change any answer. 10 seconds.</p>
+  </div>
+  <div id="final-timer-track"><div id="final-timer-fill"></div></div>
+  <div id="final-faces-row"></div>
+  <div id="final-questions-list"></div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="screen-result" class="screen">
+  <img src="logo.jpeg" alt="TELL" class="result-logo">
+  <div id="result-verdict"></div>
+  <div id="result-scores"></div>
+  <div id="result-breakdown"></div>
+  <button class="btn-primary share-btn" onclick="shareResult()">Come play TELL with me →</button>
+</div>
+
+<!-- Fireworks canvas (winner only) -->
+<canvas id="fireworks-canvas"></canvas>
+
+<!-- Audio -->
+<audio id="snd-tick" src="tick.mp3" preload="auto"></audio>
+<audio id="snd-hot" src="hot.mp3" preload="auto"></audio>
+<audio id="snd-lock" src="lock.mp3" preload="auto"></audio>
+<audio id="snd-win" src="win.mp3" preload="auto"></audio>
+<audio id="snd-lose" src="lose.mp3" preload="auto"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
+</body>
+</html>
