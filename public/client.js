@@ -183,18 +183,31 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
   pickedThisRound = false;
 
   document.getElementById('hdr-round').textContent = `${round} / ${totalRounds}`;
-  document.getElementById('question-text').textContent = question;
   document.getElementById('status-bar').textContent = '';
+
+  // Clear question until popup closes
+  document.getElementById('question-text').textContent = '';
+
+  // Lock cards during popup
+  document.querySelectorAll('#faces-row .face-card').forEach(c => {
+    c.classList.remove('my-pick','opp-pick','both-pick');
+    c.classList.add('locked');
+  });
 
   highlightActiveSlot(round);
 
-  // Unlock cards for clicking
-  document.querySelectorAll('#faces-row .face-card').forEach(c => {
-    c.classList.remove('my-pick','opp-pick','both-pick','locked');
-  });
+  // Show TELL 1 / TELL 2 etc popup with bell, then start round
+  showRoundPopup(round, () => {
+    document.getElementById('question-text').textContent = question;
 
-  startTimer('timer-fill', 15, () => {
-    if (!pickedThisRound) submitPick(0);
+    // Unlock cards
+    document.querySelectorAll('#faces-row .face-card').forEach(c => {
+      c.classList.remove('locked');
+    });
+
+    startTimer('timer-fill', 15, () => {
+      if (!pickedThisRound) submitPick(0);
+    });
   });
 });
 
@@ -428,19 +441,81 @@ function startTimer(fillId, seconds, onExpire) {
 
 // ── BEEP via Web Audio API ──
 let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
 function beep() {
   try {
-    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = _audioCtx.createOscillator();
-    const gain = _audioCtx.createGain();
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.connect(gain);
-    gain.connect(_audioCtx.destination);
+    gain.connect(ctx.destination);
     osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.3, _audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.08);
-    osc.start(_audioCtx.currentTime);
-    osc.stop(_audioCtx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.08);
   } catch(e) {}
+}
+
+// ── BOXING BELL ──
+function boxingBell() {
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+
+    // Strike 1
+    ringBell(ctx, t);
+    // Strike 2
+    ringBell(ctx, t + 0.6);
+    // Strike 3
+    ringBell(ctx, t + 1.2);
+  } catch(e) {}
+}
+
+function ringBell(ctx, startTime) {
+  // Bell body — high metallic tone with long decay
+  [440, 880, 1320, 2200].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const vol = [0.4, 0.3, 0.15, 0.08][i];
+    gain.gain.setValueAtTime(vol, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8);
+    osc.start(startTime);
+    osc.stop(startTime + 1.8);
+  });
+}
+
+// ── ROUND POPUP ──
+function showRoundPopup(round, callback) {
+  boxingBell();
+  const popup = document.getElementById('popup-letsplay');
+  const text = popup.querySelector('.popup-text');
+  const img = popup.querySelector('img');
+  img.style.display = 'none';
+  text.textContent = `TELL ${round}`;
+  text.style.fontSize = '52px';
+  text.style.letterSpacing = '0.06em';
+  popup.classList.remove('hidden');
+  requestAnimationFrame(() => popup.classList.add('show'));
+
+  setTimeout(() => {
+    popup.classList.remove('show');
+    setTimeout(() => {
+      popup.classList.add('hidden');
+      img.style.display = '';
+      text.style.fontSize = '';
+      text.style.letterSpacing = '';
+      if (callback) callback();
+    }, 300);
+  }, 1800);
 }
 
 function stopTimer() {
