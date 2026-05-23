@@ -10,13 +10,13 @@
 </head>
 <body>
 
-<!-- ══ SPLASH ══ -->
+<!-- SPLASH -->
 <div id="screen-splash" class="screen active">
   <img src="logo.jpeg" alt="TELL" class="splash-logo">
   <p class="splash-tag">Five faces. One truth. No mercy.</p>
 </div>
 
-<!-- ══ CREATOR LOBBY ══ -->
+<!-- CREATOR -->
 <div id="screen-creator" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <label class="field-label">YOUR NAME</label>
@@ -24,7 +24,7 @@
   <button id="btn-challenge" class="btn-primary" onclick="createGame()" disabled>CHALLENGE A FRIEND</button>
 </div>
 
-<!-- ══ WAITING ══ -->
+<!-- WAITING -->
 <div id="screen-waiting" class="screen">
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
   <button class="btn-primary share-invite-btn" onclick="shareInvite()">SEND CHALLENGE →</button>
@@ -35,7 +35,7 @@
   </div>
 </div>
 
-<!-- ══ JOINER LOBBY ══ -->
+<!-- JOINER -->
 <div id="screen-joiner" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <p class="join-challenge-msg">You've been challenged!</p>
@@ -45,11 +45,13 @@
   <p id="join-error-msg" class="join-error hidden"></p>
 </div>
 
-<!-- ══ GAME ══ -->
+<!-- GAME -->
 <div id="screen-game" class="screen">
+
+  <!-- Header: MY NAME | ROUND | OPP NAME -->
   <div id="game-header">
     <div class="score-block">
-      <span class="score-name pulse-pink" id="hdr-my-name">YOU</span>
+      <span class="score-name" id="hdr-my-name">YOU</span>
       <span class="score-num" id="hdr-my-score">0</span>
     </div>
     <div class="round-badge" id="hdr-round">1 / 5</div>
@@ -58,21 +60,24 @@
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
+
   <div id="timer-track"><div id="timer-fill"></div></div>
   <div id="question-box"><p id="question-text"></p></div>
   <div id="faces-row"></div>
-  <div id="answer-strips">
-    <div class="strip-header">
-      <span class="strip-header-label" id="strip-my-name">YOU</span>
-      <span class="strip-header-mid"></span>
-      <span class="strip-header-label strip-header-right" id="strip-opp-name">OPP</span>
+
+  <!-- BOTTOM: Pink | Strip | Blue -->
+  <div id="game-bottom">
+    <div class="side-label" id="strip-left-label" style="color:#e75480">PINK</div>
+    <div id="strip-area">
+      <div id="answer-strip"></div>
     </div>
-    <div id="answer-strip"></div>
+    <div class="side-label" id="strip-right-label" style="color:#3498db">BLUE</div>
   </div>
+
   <div id="status-bar"></div>
 </div>
 
-<!-- ══ FINAL PHASE ══ -->
+<!-- FINAL PHASE -->
 <div id="screen-final" class="screen">
   <div id="final-header">
     <h2 class="final-title">FINAL CHANCE</h2>
@@ -91,7 +96,7 @@
   </div>
 </div>
 
-<!-- ══ RESULT ══ -->
+<!-- RESULT -->
 <div id="screen-result" class="screen">
   <img src="logo.jpeg" alt="TELL" class="result-logo">
   <div id="result-verdict"></div>
@@ -100,7 +105,7 @@
   <button class="btn-primary share-btn" onclick="shareResult()">Come play TELL with me →</button>
 </div>
 
-<!-- Popup -->
+<!-- POPUP -->
 <div id="popup-letsplay" class="popup hidden">
   <div class="popup-inner">
     <img src="logo.jpeg" alt="TELL" style="width:80px;margin-bottom:12px">
