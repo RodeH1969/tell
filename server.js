@@ -12,7 +12,7 @@ const io = new Server(server);
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve game images from data folder
+// Serve game data including card images
 app.use('/data', express.static(path.join(__dirname, 'data')));
 
 // Load questions
@@ -260,3 +260,16 @@ function resolveGame(code) {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`TELL running on port ${PORT}`));
+
+// ── KEEP ALIVE: ping self every 10 minutes to prevent Render free tier spindown ──
+const https = require('https');
+const http2 = require('http');
+setInterval(() => {
+  const url = process.env.RENDER_EXTERNAL_URL;
+  if (!url) return;
+  const mod = url.startsWith('https') ? https : http2;
+  mod.get(url + '/ping', () => {}).on('error', () => {});
+}, 10 * 60 * 1000);
+
+// Ping endpoint
+app.get('/ping', (req, res) => res.send('ok'));
