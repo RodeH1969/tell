@@ -252,12 +252,8 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
   showRoundPopup(round, () => {
     // Play audio question
     const qData = gameData.questions[round-1];
-    const statusBar = document.getElementById('status-bar');
     if (qData && qData.audio) {
-      if (statusBar) statusBar.textContent = '🔊 ' + qData.audio;
       playQuestion(qData.audio);
-    } else {
-      if (statusBar) statusBar.textContent = 'NO AUDIO: ' + JSON.stringify(qData);
     }
     // Unlock non-used faces
     document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
