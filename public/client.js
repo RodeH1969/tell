@@ -175,6 +175,7 @@ socket.on('game_start', ({ game, players }) => {
   myName = mn; oppName = on; gameData = game;
   myPicks = {}; oppPicks = {}; usedFaces = new Set();
   myColour = playerIndex === 0 ? 'pink' : 'blue';
+  stopMusic(); // Stop theme when game starts
 
   const pinkName = myColour === 'pink' ? myName : oppName;
   const blueName  = myColour === 'pink' ? oppName : myName;
