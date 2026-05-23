@@ -145,6 +145,20 @@ io.on('connection', (socket) => {
     setTimeout(() => startRound(code), 2000);
   });
 
+  // REJOIN ROOM (creator reconnects while waiting)
+  socket.on('rejoin_room', async ({ code, name }) => {
+    const room = await getRoom(code);
+    if (!room) return;
+    const player = room.players.find(p => p.name === name);
+    if (player) {
+      console.log(`REJOIN: ${name} back in room ${code}`);
+      player.id = socket.id;
+      socketRoom[socket.id] = code;
+      socket.join(code);
+      await db.ref(`rooms/${code}/players`).set(room.players);
+    }
+  });
+
   // SUBMIT PICK
   socket.on('submit_pick', async ({ faceIndex }) => {
     const code = socketRoom[socket.id];
@@ -263,4 +277,4 @@ async function resolveGame(code) {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`TELL running on port ${PORT}`));
+server.listen(PORT, () => console.log(`TELL running on port ${PORT}`));s

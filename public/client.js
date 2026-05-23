@@ -7,10 +7,14 @@ const socket = io({
 });
 
 socket.on('reconnect', () => {
-  if (roomCode && !gameData) {
-    const nameInput = document.getElementById('input-joiner-name');
-    const name = nameInput ? nameInput.value.trim() : myName;
-    if (name && roomCode) socket.emit('join_room', { name, code: roomCode });
+  console.log('Reconnected, roomCode=', roomCode, 'myName=', myName);
+  if (roomCode && !gameData && myName) {
+    // Could be creator waiting or joiner — try rejoin first
+    socket.emit('rejoin_room', { code: roomCode, name: myName });
+    // If that fails (not creator), try join
+    setTimeout(() => {
+      if (!gameData) socket.emit('join_room', { name: myName, code: roomCode });
+    }, 500);
   }
 });
 
@@ -77,6 +81,8 @@ socket.on('room_created', ({ code }) => {
   roomCode = code;
   window._inviteLink = `${location.origin}?room=${code}`;
   show('screen-waiting');
+  // Register socket in room immediately so reconnects work
+  socket.emit('rejoin_room', { code, name: myName });
 });
 
 // ── JOIN ──
