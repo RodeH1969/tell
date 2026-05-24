@@ -477,18 +477,28 @@ function submitFinal() {
 }
 
 // ── GAME OVER ──
-socket.on('game_over', ({ won, draw, myScore, oppScore, myName: mn, oppName: on, myResults, faces, questions }) => {
+socket.on('game_over', ({ scores, results, faces, questions }) => {
   stopMusic();
   show('screen-result');
+
+  const myScore  = scores[myName]  || 0;
+  const oppScore = scores[oppName] || 0;
+  const myResults = results[myName] || {};
+  const won  = myScore > oppScore;
+  const draw = myScore === oppScore;
+
   const verdict = document.getElementById('result-verdict');
   if (draw)     { verdict.textContent = 'DRAW';     verdict.className = 'draw'; }
   else if (won) { verdict.textContent = 'YOU WIN';  verdict.className = 'win'; launchFireworks(); }
   else          { verdict.textContent = 'YOU LOSE'; verdict.className = 'lose'; }
 
+  const myColourHex  = myColour === 'pink' ? '#e75480' : '#3498db';
+  const oppColourHex = myColour === 'pink' ? '#3498db' : '#e75480';
+
   document.getElementById('result-scores').innerHTML = `
-    <div class="rs-player"><span class="rs-name" style="color:#e75480">${mn.toUpperCase()}</span><span class="rs-num">${myScore}</span></div>
+    <div class="rs-player"><span class="rs-name" style="color:${myColourHex}">${myName.toUpperCase()}</span><span class="rs-num">${myScore}</span></div>
     <span class="rs-vs">VS</span>
-    <div class="rs-player"><span class="rs-name" style="color:#3498db">${on.toUpperCase()}</span><span class="rs-num">${oppScore}</span></div>
+    <div class="rs-player"><span class="rs-name" style="color:${oppColourHex}">${oppName.toUpperCase()}</span><span class="rs-num">${oppScore}</span></div>
   `;
 
   const usedFaces = faces || gameData.faces;
@@ -576,36 +586,33 @@ function showPopupText(text, fontSize, duration, callback) {
   const popup = document.getElementById('popup-letsplay');
   const textEl = popup.querySelector('.popup-text');
   const img = popup.querySelector('img');
-  img.style.display = 'none';
-  textEl.textContent = text; textEl.style.fontSize = fontSize;
-  textEl.style.whiteSpace = 'pre-line'; textEl.style.textAlign = 'center';
-  popup.classList.remove('hidden');
-  requestAnimationFrame(() => popup.classList.add('show'));
 
-  // Make popup tappable to dismiss early AND play audio
-  popup.onclick = () => {
+  img.style.display = 'none';
+  textEl.textContent = text;
+  textEl.style.fontSize = fontSize;
+  textEl.style.whiteSpace = 'pre-line';
+  textEl.style.textAlign = 'center';
+
+  // Show using opacity only — no hidden class manipulation
+  popup.classList.add('show');
+
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
     popup.onclick = null;
     popup.classList.remove('show');
+    img.style.display = '';
+    textEl.style.fontSize = '';
+    textEl.style.whiteSpace = '';
     setTimeout(() => {
-      popup.classList.add('hidden');
-      img.style.display = ''; textEl.style.fontSize = ''; textEl.style.whiteSpace = '';
-      playPendingAudio(); // Play question audio on user tap
+      playPendingAudio();
       if (callback) callback();
     }, 300);
   };
 
-  setTimeout(() => {
-    if (!popup.classList.contains('hidden')) {
-      popup.onclick = null;
-      popup.classList.remove('show');
-      setTimeout(() => {
-        popup.classList.add('hidden');
-        img.style.display = ''; textEl.style.fontSize = ''; textEl.style.whiteSpace = '';
-        playPendingAudio();
-        if (callback) callback();
-      }, 300);
-    }
-  }, duration);
+  popup.onclick = dismiss;
+  setTimeout(dismiss, duration);
 }
 
 // ── SCREEN ──

@@ -720,46 +720,6 @@ html, body {
   margin-bottom: 8px;
 }
 
-/* ══ POPUP ══ */
-.popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0.92);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.popup.show {
-  opacity: 1;
-}
-
-.popup-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.popup-text {
-  font-family: var(--serif);
-  font-size: 32px;
-  font-weight: 900;
-  color: var(--teal);
-  letter-spacing: 0.03em;
-  text-align: center;
-}
-
-.waiting-sub {
-  font-size: 13px;
-  color: var(--mid);
-  text-align: center;
-  letter-spacing: 0.04em;
-}
-
 /* ══ CARD IMAGE SWAP FLIP ══ */
 .face-card {
   position: relative;
@@ -800,49 +760,6 @@ html, body {
   color: var(--teal);
   text-align: center;
   margin-bottom: 4px;
-}
-
-/* ══ POPUP ══ */
-.popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0.94);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.popup.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.popup-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-}
-
-.popup-text {
-  font-family: var(--serif);
-  font-size: 34px;
-  font-weight: 900;
-  color: var(--teal);
-  letter-spacing: 0.02em;
-  text-align: center;
-}
-
-.waiting-sub {
-  font-size: 13px;
-  color: var(--mid);
-  text-align: center;
-  letter-spacing: 0.04em;
 }
 
 /* ══ JOIN ERROR ══ */
@@ -1038,16 +955,6 @@ html, body {
   text-align: center; margin-bottom: 4px;
 }
 
-/* ══ POPUP ══ */
-.popup {
-  position: fixed; inset: 0; background: rgba(255,255,255,0.94);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
-}
-.popup.show { opacity: 1; pointer-events: auto; }
-.popup-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) both; }
-.popup-text { font-family: var(--serif); font-size: 34px; font-weight: 900; color: var(--teal); letter-spacing: 0.02em; text-align: center; }
-
 /* ══ JOIN ERROR ══ */
 .join-error {
   font-size: 13px; color: var(--red); text-align: center; line-height: 1.5;
@@ -1078,4 +985,40 @@ html, body {
   cursor: pointer;
   margin-bottom: 8px;
   animation: goldPulse 1s ease-in-out infinite;
+}
+
+/* ══ POPUP ══ */
+#popup-letsplay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  /* Never use display:none — use opacity and pointer-events instead */
+}
+
+#popup-letsplay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.popup-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.popup-text {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--teal);
+  letter-spacing: 0.02em;
+  text-align: center;
 }
