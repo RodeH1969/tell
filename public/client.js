@@ -154,23 +154,18 @@ function preloadAudio(questions) {
 }
 
 function playQuestion(filename) {
-  if (_questionAudio) { _questionAudio.pause(); _questionAudio = null; }
-  _questionAudio = new Audio(`/audio/${filename}`);
-  _questionAudio.volume = 0.85;
-  if (_music) _music.volume = 0.05;
-  _questionAudio.onended = () => {
-    if (_music) _music.volume = 0.15;
-    _questionAudio = null;
-  };
-  const tryPlay = () => {
-    const p = _questionAudio ? _questionAudio.play() : null;
-    if (p) p.catch(err => {
-      console.log('Question audio blocked, retrying...', err);
-      setTimeout(() => { if (_questionAudio) _questionAudio.play().catch(() => {}); }, 500);
-    });
-  };
-  // Small delay to let bell sound finish and iOS unlock settle
-  setTimeout(tryPlay, 200);
+  _pendingAudio = filename;
+}
+
+function playPendingAudio() {
+  if (!_pendingAudio) return;
+  const filename = _pendingAudio;
+  _pendingAudio = null;
+  const a = _audioElements[filename] || new Audio(`/audio/${filename}`);
+  a.volume = 0.9;
+  a.currentTime = 0;
+  a.play().catch(e => console.log('Audio play error:', e));
+  _audioElements[filename] = a;
 }
 
 // ── CARD IMAGE PATH ──
