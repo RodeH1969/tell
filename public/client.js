@@ -137,32 +137,20 @@ function unlockAudio() {
 document.addEventListener('touchstart', unlockAudio, { once: true });
 document.addEventListener('click', unlockAudio, { once: true });
 
-// ── AUDIO BUFFERS ──
-const _audioBuffers = {};
-let _questionSource = null;
+// ── QUESTION AUDIO ──
+// Use HTML Audio elements preloaded at game start
+const _audioElements = {};
+let _pendingAudio = null;
 
 function preloadAudio(questions) {
-  const ctx = getAudioCtx();
   questions.forEach(q => {
-    if (!q.audio || _audioBuffers[q.audio]) return;
-    fetch(`/audio/${q.audio}`)
-      .then(r => r.arrayBuffer())
-      .then(ab => ctx.decodeAudioData(ab, decoded => {
-        _audioBuffers[q.audio] = decoded;
-      }))
-      .catch(e => console.log('Preload failed:', q.audio, e));
+    if (!q.audio || _audioElements[q.audio]) return;
+    const a = new Audio(`/audio/${q.audio}`);
+    a.preload = 'auto';
+    a.volume = 0.9;
+    _audioElements[q.audio] = a;
+    a.load();
   });
-}
-
-function playBuffer(ctx, buf) {
-  if (_questionSource) { try { _questionSource.stop(); } catch(e) {} }
-  _questionSource = ctx.createBufferSource();
-  const gain = ctx.createGain();
-  _questionSource.buffer = buf;
-  gain.gain.value = 0.9;
-  _questionSource.connect(gain);
-  gain.connect(ctx.destination);
-  _questionSource.start(0);
 }
 
 function playQuestion(filename) {
@@ -583,18 +571,6 @@ function ringBell(ctx, st) {
 function showRoundPopup(round, callback) {
   unlockAudio();
   boxingBell();
-  // Pre-fetch this round's audio during the popup (user gesture is active)
-  const qData = gameData && gameData.questions ? gameData.questions[round-1] : null;
-  if (qData && qData.audio && !_audioBuffers[qData.audio]) {
-    const ctx = getAudioCtx();
-    if (ctx.state === 'suspended') ctx.resume();
-    fetch(`/audio/${qData.audio}`)
-      .then(r => r.arrayBuffer())
-      .then(ab => ctx.decodeAudioData(ab, decoded => {
-        _audioBuffers[qData.audio] = decoded;
-      }))
-      .catch(e => console.log('Round audio prefetch failed:', e));
-  }
   showPopupText(`TELL ${round}`, '58px', 1800, callback);
 }
 function showGenericPopup(text, callback) { showPopupText(text, '28px', 2500, callback); }
@@ -607,13 +583,30 @@ function showPopupText(text, fontSize, duration, callback) {
   textEl.style.whiteSpace = 'pre-line'; textEl.style.textAlign = 'center';
   popup.classList.remove('hidden');
   requestAnimationFrame(() => popup.classList.add('show'));
-  setTimeout(() => {
+
+  // Make popup tappable to dismiss early AND play audio
+  popup.onclick = () => {
+    popup.onclick = null;
     popup.classList.remove('show');
     setTimeout(() => {
       popup.classList.add('hidden');
       img.style.display = ''; textEl.style.fontSize = ''; textEl.style.whiteSpace = '';
+      playPendingAudio(); // Play question audio on user tap
       if (callback) callback();
     }, 300);
+  };
+
+  setTimeout(() => {
+    if (!popup.classList.contains('hidden')) {
+      popup.onclick = null;
+      popup.classList.remove('show');
+      setTimeout(() => {
+        popup.classList.add('hidden');
+        img.style.display = ''; textEl.style.fontSize = ''; textEl.style.whiteSpace = '';
+        playPendingAudio();
+        if (callback) callback();
+      }, 300);
+    }
   }, duration);
 }
 
