@@ -200,8 +200,6 @@ socket.on('game_start', ({ game, players }) => {
 
   renderFaceCards();
   renderStrip();
-  // Preload all question audio buffers
-  if (gameData.questions) preloadAudio(gameData.questions);
   setTimeout(showLetsPlay, 1000);
 });
 
@@ -236,6 +234,10 @@ function flipCardsToFace() {
       }, 350);
     }, i * 450);
   });
+  // Preload audio AFTER all cards have flipped (5 cards * 450ms + 350ms = ~2600ms)
+  setTimeout(() => {
+    if (gameData && gameData.questions) preloadAudio(gameData.questions);
+  }, 3000);
 }
 
 // ── ROUND START ──
