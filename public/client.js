@@ -483,11 +483,14 @@ function tapFinalCard(faceIndex) {
   }
 }
 
+let _finalChanges = 0;
+
 function swapFinalCards(faceA, faceB) {
   const roundA = parseInt(Object.keys(finalPicks).find(r => finalPicks[r] === faceA));
   const roundB = parseInt(Object.keys(finalPicks).find(r => finalPicks[r] === faceB));
   if (!isNaN(roundA)) finalPicks[roundA] = faceB;
   if (!isNaN(roundB)) finalPicks[roundB] = faceA;
+  _finalChanges++; // count each swap as one change
   const btnA = document.getElementById(`fcb-${faceA}`);
   const btnB = document.getElementById(`fcb-${faceB}`);
   if (btnA && btnB) {
@@ -500,7 +503,8 @@ function swapFinalCards(faceA, faceB) {
 
 function submitFinal() {
   stopTimer();
-  socket.emit('submit_final', { picks: finalPicks });
+  socket.emit('submit_final', { picks: finalPicks, changes: _finalChanges });
+  _finalChanges = 0;
 }
 
 // ── GAME OVER ──

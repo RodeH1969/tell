@@ -175,7 +175,7 @@ io.on('connection', (socket) => {
   });
 
   // SUBMIT FINAL
-  socket.on('submit_final', async ({ picks }) => {
+  socket.on('submit_final', async ({ picks, changes }) => {
     const code = socketRoom[socket.id];
     if (!code) return;
     const room = await getRoom(code);
@@ -187,6 +187,7 @@ io.on('connection', (socket) => {
       if (!player.picks) player.picks = {};
       Object.assign(player.picks, picks);
       player.finalSubmitted = true;
+      player.changes = changes || 0;
     }
 
     await db.ref(`rooms/${code}`).update({ players });
@@ -277,6 +278,7 @@ async function resolveGame(code) {
   io.to(code).emit('game_over', {
     scores: { [p1.name]: p1Score, [p2.name]: p2Score },
     results: { [p1.name]: p1Results, [p2.name]: p2Results },
+    changes: { [p1.name]: p1.changes || 0, [p2.name]: p2.changes || 0 },
     faces: room.game.faces,
     questions: questions.map(q => q.text)
   });

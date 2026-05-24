@@ -1022,3 +1022,107 @@ html, body {
   letter-spacing: 0.02em;
   text-align: center;
 }
+
+/* ══ RESULT SCREEN — NEW LAYOUT ══ */
+#screen-result {
+  padding: 16px 12px 40px;
+  gap: 0;
+  overflow-y: auto;
+}
+
+.result-player-section {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.result-player-name {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+
+.result-cards-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.result-card-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.result-card-img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 4px solid var(--border);
+}
+
+.result-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.result-card-img.correct { border-color: #16a34a; }
+.result-card-img.wrong   { border-color: #dc2626; }
+
+.result-card-icon {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.result-card-img.correct .result-card-icon {
+  background: #16a34a;
+  color: white;
+}
+
+.result-card-img.wrong .result-card-icon {
+  background: #dc2626;
+  color: white;
+}
+
+.result-card-name {
+  font-family: var(--serif);
+  font-size: clamp(8px, 2vw, 11px);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.name-correct { color: #16a34a; }
+.name-wrong   { color: #dc2626; }
+
+.result-card-answer {
+  font-size: clamp(7px, 1.8vw, 10px);
+  color: #16a34a;
+  text-align: center;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.result-logo {
+  width: min(120px, 32vw);
+  margin-bottom: 8px;
+}
