@@ -349,11 +349,17 @@ function revealStripRow(round, mp, op) {
 
   if (pinkEl && pinkPicks[round] !== undefined) {
     const face = gameData.faces[pinkPicks[round]];
-    pinkEl.querySelector('.strip-thumb').innerHTML = `<img src="${cardImg(face)}" alt="${face.name}" title="${face.name}">`;
+    const isCorrect = pinkPicks[round] === q.answerIndex;
+    const thumb = pinkEl.querySelector('.strip-thumb');
+    thumb.innerHTML = `<img src="${cardImg(face)}" alt="${face.name}" title="${face.name}">`;
+    thumb.classList.add(isCorrect ? 'correct-pick' : 'wrong-pick');
   }
   if (blueEl && bluePicks[round] !== undefined) {
     const face = gameData.faces[bluePicks[round]];
-    blueEl.querySelector('.strip-thumb').innerHTML = `<img src="${cardImg(face)}" alt="${face.name}" title="${face.name}">`;
+    const isCorrect = bluePicks[round] === q.answerIndex;
+    const thumb = blueEl.querySelector('.strip-thumb');
+    thumb.innerHTML = `<img src="${cardImg(face)}" alt="${face.name}" title="${face.name}">`;
+    thumb.classList.add(isCorrect ? 'correct-pick' : 'wrong-pick');
   }
 }
 
@@ -549,6 +555,18 @@ function ringBell(ctx, st) {
 function showRoundPopup(round, callback) {
   unlockAudio();
   boxingBell();
+  // Pre-fetch this round's audio during the popup (user gesture is active)
+  const qData = gameData && gameData.questions ? gameData.questions[round-1] : null;
+  if (qData && qData.audio && !_audioBuffers[qData.audio]) {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    fetch(`/audio/${qData.audio}`)
+      .then(r => r.arrayBuffer())
+      .then(ab => ctx.decodeAudioData(ab, decoded => {
+        _audioBuffers[qData.audio] = decoded;
+      }))
+      .catch(e => console.log('Round audio prefetch failed:', e));
+  }
   showPopupText(`TELL ${round}`, '58px', 1800, callback);
 }
 function showGenericPopup(text, callback) { showPopupText(text, '28px', 2500, callback); }

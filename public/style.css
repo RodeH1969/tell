@@ -360,11 +360,11 @@ html, body {
   box-shadow: 0 6px 16px rgba(45,122,122,0.2);
 }
 
-.face-card.my-pick   { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal); }
-.face-card.opp-pick  { border-color: var(--gold);  box-shadow: 0 0 0 2px var(--gold); }
-.face-card.both-pick { border-color: var(--teal);
-  box-shadow: 0 0 0 2px var(--teal), inset 0 0 0 3px var(--gold); }
-.face-card.correct   { border-color: var(--green); box-shadow: 0 0 0 3px var(--green); }
+.face-card.my-pick   { border-color: var(--teal); border-width: 4px; box-shadow: 0 0 0 3px var(--teal); }
+.face-card.opp-pick  { border-color: var(--gold);  border-width: 4px; box-shadow: 0 0 0 3px var(--gold); }
+.face-card.both-pick { border-color: var(--teal);  border-width: 4px;
+  box-shadow: 0 0 0 3px var(--teal), inset 0 0 0 3px var(--gold); }
+.face-card.correct   { border-color: #16a34a; border-width: 5px; box-shadow: 0 0 0 4px #16a34a; }
 .face-card.locked    { cursor: default; transform: none; }
 
 .face-num {
@@ -643,8 +643,9 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 .bd-row:last-child { border-bottom: none; }
-.bd-row.correct    { background: #f0fdf4; }
-.bd-row.wrong      { background: #fff5f5; }
+.bd-row.correct    { background: #dcfce7; border-left: 5px solid #16a34a; }
+.bd-row.wrong      { background: #fee2e2; border-left: 5px solid #dc2626; }
+.bd-icon           { font-size: 20px; font-weight: 900; }
 
 .bd-q    { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--mid); min-width: 22px; }
 .bd-thumb { width: 28px; height: 34px; border-radius: 4px; overflow: hidden; background: var(--border); flex-shrink: 0; }
@@ -961,6 +962,11 @@ html, body {
   font-size: clamp(10px, 2.8vw, 14px);
   font-weight: 700; color: var(--teal); line-height: 1.2;
 }
+
+/* Correct pick — green thumb border */
+.strip-thumb.correct-pick { border: 3px solid #16a34a; border-radius: 5px; }
+/* Wrong pick — red thumb border */  
+.strip-thumb.wrong-pick   { border: 3px solid #dc2626; border-radius: 5px; }
 
 /* ══ USED FACE ══ */
 .face-card.used-face { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; }
