@@ -6,7 +6,7 @@
   <title>TELL</title>
   <link rel="icon" href="logo.jpeg" type="image/jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -48,33 +48,25 @@
 
 <!-- GAME -->
 <div id="screen-game" class="screen">
-
-  <!-- Header: MY NAME | ROUND | OPP NAME -->
   <div id="game-header">
     <div class="score-block">
       <span class="score-name" id="hdr-my-name">YOU</span>
       <span class="score-num" id="hdr-my-score">0</span>
     </div>
-    <div class="round-badge" id="hdr-round">1 / 5</div>
+    <div class="round-badge" id="hdr-round">R1 · Q1/3</div>
     <div class="score-block right">
       <span class="score-name" id="hdr-opp-name">OPP</span>
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
-
   <div id="timer-track"><div id="timer-fill"></div></div>
+  <button id="audio-play-btn" style="display:none">🔊 TAP TO HEAR QUESTION</button>
   <div id="faces-row"></div>
-  <button id="audio-play-btn" onclick="void(0)" style="display:none">🔊 TAP TO HEAR QUESTION</button>
-
-  <!-- BOTTOM: Pink | Strip | Blue -->
   <div id="game-bottom">
-    <div class="side-label" id="strip-left-label" style="color:#e75480">PINK</div>
-    <div id="strip-area">
-      <div id="answer-strip"></div>
-    </div>
-    <div class="side-label" id="strip-right-label" style="color:#3498db">BLUE</div>
+    <div class="side-label" id="strip-left-label">RED</div>
+    <div id="strip-area"><div id="answer-strip"></div></div>
+    <div class="side-label" id="strip-right-label">BLUE</div>
   </div>
-
   <div id="status-bar"></div>
 </div>
 
@@ -85,12 +77,10 @@
     <p class="final-sub">Tap two name buttons to swap them</p>
   </div>
   <div id="final-timer-track"><div id="final-timer-fill"></div></div>
-
   <div id="final-my-section">
     <p class="final-section-label">YOUR PICKS — tap to swap</p>
     <div id="final-my-cards" class="final-cards-row"></div>
   </div>
-
   <div id="final-opp-section">
     <p class="final-section-label" id="final-opp-label">OPPONENT'S CHOICES</p>
     <div id="final-opp-cards" class="final-cards-row"></div>

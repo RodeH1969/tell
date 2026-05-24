@@ -1,4 +1,4 @@
-// ── TELL server.js v5 ──
+// ── TELL server.js v6 — Two rounds of 3 ──
 
 const express = require('express');
 const http = require('http');
@@ -26,7 +26,6 @@ try {
     console.log('Firebase env var parsed OK, project:', serviceAccount.project_id);
   } else {
     serviceAccount = require('./firebase-key.json');
-    console.log('Firebase key file loaded OK');
   }
 } catch(e) {
   console.error('FIREBASE INIT ERROR:', e.message);
@@ -43,24 +42,58 @@ db.ref('.info/connected').on('value', snap => console.log('Firebase connected:',
 console.log('Firebase admin initialized');
 
 const GAMES = require('./data/questions.json');
-const socketRoom = {}; // socketId -> roomCode
+const socketRoom = {};
 
 function generateCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-function shuffleGame(game) {
-  const g = JSON.parse(JSON.stringify(game));
-  const faces = g.faces;
-  for (let i = faces.length - 1; i > 0; i--) {
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [faces[i], faces[j]] = [faces[j], faces[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  g.questions.forEach(q => {
-    const answerName = game.faces[q.answerIndex].name;
-    q.answerIndex = faces.findIndex(f => f.name === answerName);
-  });
-  return g;
+  return a;
+}
+
+// Split 6 faces into 2 random groups of 3, shuffle questions within each group
+// Ensure question order never matches face display order
+function prepareGame(game) {
+  const g = JSON.parse(JSON.stringify(game));
+
+  // Shuffle all 6 faces randomly
+  const shuffledFaces = shuffle(g.faces);
+
+  // Split into two rounds of 3
+  const round1Faces = shuffledFaces.slice(0, 3);
+  const round2Faces = shuffledFaces.slice(3, 6);
+
+  // Get questions for each round based on which faces are in it
+  // Each face has a corresponding question
+  const getQuestionsForFaces = (facesSubset) => {
+    // Find the original questions for these faces
+    let questions = facesSubset.map(face => {
+      const origIdx = g.faces.findIndex(f => f.name === face.name);
+      return { ...g.questions[origIdx], faceName: face.name };
+    });
+    // Shuffle questions so order doesn't match face order
+    questions = shuffle(questions);
+    // Remap answerIndex to position within this subset
+    questions.forEach(q => {
+      q.answerIndex = facesSubset.findIndex(f => f.name === q.faceName);
+      delete q.faceName;
+    });
+    return questions;
+  };
+
+  return {
+    ...g,
+    rounds: [
+      { faces: round1Faces, questions: getQuestionsForFaces(round1Faces) },
+      { faces: round2Faces, questions: getQuestionsForFaces(round2Faces) }
+    ]
+  };
 }
 
 async function getRoom(code) {
@@ -75,21 +108,15 @@ async function deleteRoom(code) {
 // ── SOCKET HANDLING ──
 io.on('connection', (socket) => {
 
-  // CREATE ROOM
   socket.on('create_room', async ({ name }) => {
     const code = generateCode();
     const baseGame = GAMES[Math.floor(Math.random() * GAMES.length)];
     console.log(`CREATE: name=${name} code=${code} game=${baseGame.gameId}`);
-
     const room = {
-      code,
-      game: baseGame,
-      players: [{ id: socket.id, name, score: 0, picks: {} }],
-      round: 0,
-      phase: 'waiting',
-      roundPicks: {}
+      code, game: baseGame,
+      players: [{ id: socket.id, name, score: 0, picks: {}, roundScores: [0, 0], changes: [0, 0] }],
+      round: 0, phase: 'waiting', roundPicks: {}, currentRound: 0
     };
-
     await db.ref(`rooms/${code}`).set(room);
     setTimeout(() => db.ref(`rooms/${code}`).remove(), 30 * 60 * 1000);
     socketRoom[socket.id] = code;
@@ -97,40 +124,33 @@ io.on('connection', (socket) => {
     socket.emit('room_created', { code });
   });
 
-  // JOIN ROOM
   socket.on('join_room', async ({ name, code }) => {
     console.log(`JOIN: name=${name} code=${code}`);
     const room = await getRoom(code);
-
     if (!room) return socket.emit('join_error', { message: 'Room not found.' });
     if (room.players && room.players.length >= 2) return socket.emit('join_error', { message: 'Room is full.' });
     if (room.phase !== 'waiting') return socket.emit('join_error', { message: 'Game already started.' });
 
     const players = room.players || [];
-    players.push({ id: socket.id, name, score: 0, picks: {} });
+    players.push({ id: socket.id, name, score: 0, picks: {}, roundScores: [0, 0], changes: [0, 0] });
 
-    const shuffledGame = shuffleGame(room.game);
-
-    await db.ref(`rooms/${code}`).update({ players, game: shuffledGame, phase: 'playing' });
+    const preparedGame = prepareGame(room.game);
+    await db.ref(`rooms/${code}`).update({ players, game: preparedGame, phase: 'playing' });
 
     socketRoom[socket.id] = code;
     socket.join(code);
 
-    // ── EMIT game_start TO ROOM — both players get it ──
     io.to(code).emit('game_start', {
-      game: shuffledGame,
+      game: preparedGame,
       players: [
         { name: players[0].name, playerIndex: 0 },
         { name: players[1].name, playerIndex: 1 }
       ]
     });
 
-    // Wait for flip animation to complete before starting round 1
-    // Flip takes ~3.5s + Let's Play popup 2.5s + 1s delay = 7s total
-    setTimeout(() => startRound(code), 8000);
+    setTimeout(() => startQuestion(code, 0, 0), 8000);
   });
 
-  // REJOIN ROOM
   socket.on('rejoin_room', async ({ code, name }) => {
     const room = await getRoom(code);
     if (!room) return;
@@ -144,7 +164,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // SUBMIT PICK
   socket.on('submit_pick', async ({ faceIndex }) => {
     const code = socketRoom[socket.id];
     if (!code) return;
@@ -158,23 +177,18 @@ io.on('connection', (socket) => {
     const player = players.find(p => p.id === socket.id);
     if (player) {
       if (!player.picks) player.picks = {};
-      player.picks[room.round] = faceIndex;
+      // Key: "round_question" e.g. "0_1"
+      player.picks[`${room.currentRound}_${room.round}`] = faceIndex;
     }
 
     await db.ref(`rooms/${code}`).update({ roundPicks, players });
 
-    // Emit pick_made to ROOM not individual IDs
-    const submitterId = socket.id;
-    io.to(code).emit('pick_made', {
-      round: room.round,
-      submitterName: player ? player.name : '',
-      faceIndex
-    });
+    const submitterName = player ? player.name : '';
+    io.to(code).emit('pick_made', { round: room.round, submitterName, faceIndex });
 
-    if (Object.keys(roundPicks).length === 2) revealRound(code);
+    if (Object.keys(roundPicks).length === 2) revealQuestion(code);
   });
 
-  // SUBMIT FINAL
   socket.on('submit_final', async ({ picks, changes }) => {
     const code = socketRoom[socket.id];
     if (!code) return;
@@ -187,14 +201,15 @@ io.on('connection', (socket) => {
       if (!player.picks) player.picks = {};
       Object.assign(player.picks, picks);
       player.finalSubmitted = true;
-      player.changes = changes || 0;
+      if (!player.changes) player.changes = [0, 0];
+      player.changes[room.currentRound] = changes || 0;
     }
 
     await db.ref(`rooms/${code}`).update({ players });
-    if (players.every(p => p.finalSubmitted)) resolveGame(code);
+
+    if (players.every(p => p.finalSubmitted)) resolveRound(code);
   });
 
-  // DISCONNECT
   socket.on('disconnect', async () => {
     const code = socketRoom[socket.id];
     delete socketRoom[socket.id];
@@ -207,91 +222,197 @@ io.on('connection', (socket) => {
   });
 });
 
-// ── ROUND FLOW ──
-async function startRound(code) {
+// ── QUESTION FLOW ──
+// currentRound = 0 or 1 (game round)
+// round = question index within that round (0, 1, 2)
+
+async function startQuestion(code, gameRound, questionIdx) {
   const room = await getRoom(code);
   if (!room) return;
-  const round = (room.round || 0) + 1;
-  await db.ref(`rooms/${code}`).update({ round, roundPicks: {}, phase: 'picking' });
-  const q = room.game.questions[round - 1];
-  // Emit to room
-  io.to(code).emit('round_start', { round, totalRounds: 5, question: q.text });
+
+  await db.ref(`rooms/${code}`).update({
+    round: questionIdx,
+    currentRound: gameRound,
+    roundPicks: {},
+    phase: 'picking'
+  });
+
+  const q = room.game.rounds[gameRound].questions[questionIdx];
+  io.to(code).emit('question_start', {
+    gameRound,
+    questionIdx,
+    totalQuestions: 3,
+    question: q.text,
+    faces: room.game.rounds[gameRound].faces
+  });
 }
 
-async function revealRound(code) {
+async function revealQuestion(code) {
   const room = await getRoom(code);
   if (!room) return;
+
   await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
+
   const [p1, p2] = room.players;
-  // Emit to room — client identifies their own picks by name
-  io.to(code).emit('round_reveal', {
-    round: room.round,
+  io.to(code).emit('question_reveal', {
+    gameRound: room.currentRound,
+    questionIdx: room.round,
     picks: {
       [p1.name]: p1.picks || {},
       [p2.name]: p2.picks || {}
     }
   });
+
   setTimeout(() => {
-    if (room.round < 5) setTimeout(() => startRound(code), 2000);
-    else setTimeout(() => startFinalPhase(code), 2000);
+    if (room.round < 2) {
+      // Next question in same round
+      setTimeout(() => startQuestion(code, room.currentRound, room.round + 1), 2000);
+    } else {
+      // All 3 questions done — go to final phase for this round
+      setTimeout(() => startFinalPhase(code), 2000);
+    }
   }, 2500);
 }
 
 async function startFinalPhase(code) {
   const room = await getRoom(code);
   if (!room) return;
+
   await db.ref(`rooms/${code}`).update({ phase: 'final' });
+
+  // Reset finalSubmitted
+  const players = room.players;
+  players.forEach(p => { p.finalSubmitted = false; });
+  await db.ref(`rooms/${code}/players`).set(players);
+
   const [p1, p2] = room.players;
-  io.to(code).emit('final_phase', {
-    picks: {
-      [p1.name]: p1.picks || {},
-      [p2.name]: p2.picks || {}
-    },
-    questions: room.game.questions.map(q => q.text),
-    faces: room.game.faces
+  const roundFaces = room.game.rounds[room.currentRound].faces;
+  const roundQuestions = room.game.rounds[room.currentRound].questions;
+
+  // Build picks for just this round
+  const prefix = `${room.currentRound}_`;
+  const p1RoundPicks = {};
+  const p2RoundPicks = {};
+  Object.keys(p1.picks || {}).forEach(k => {
+    if (k.startsWith(prefix)) p1RoundPicks[k.replace(prefix, '')] = p1.picks[k];
   });
-  // Force resolve after 20s in case a player doesn't submit
+  Object.keys(p2.picks || {}).forEach(k => {
+    if (k.startsWith(prefix)) p2RoundPicks[k.replace(prefix, '')] = p2.picks[k];
+  });
+
+  io.to(code).emit('final_phase', {
+    gameRound: room.currentRound,
+    picks: { [p1.name]: p1RoundPicks, [p2.name]: p2RoundPicks },
+    questions: roundQuestions.map(q => q.text),
+    faces: roundFaces
+  });
+
+  // Force resolve after 35s
   setTimeout(async () => {
     const r = await getRoom(code);
     if (r && r.phase === 'final') {
-      console.log(`Force resolving game ${code} after timeout`);
-      // Mark any unsubmitted players as submitted with current picks
-      const players = r.players;
-      players.forEach(p => { if (!p.finalSubmitted) p.finalSubmitted = true; });
-      await db.ref(`rooms/${code}/players`).set(players);
-      resolveGame(code);
+      console.log(`Force resolving round ${r.currentRound} for ${code}`);
+      const pl = r.players;
+      pl.forEach(p => { if (!p.finalSubmitted) p.finalSubmitted = true; });
+      await db.ref(`rooms/${code}/players`).set(pl);
+      resolveRound(code);
     }
   }, 35000);
 }
 
-async function resolveGame(code) {
+async function resolveRound(code) {
   const room = await getRoom(code);
   if (!room) return;
-  await db.ref(`rooms/${code}`).update({ phase: 'done' });
+
   const [p1, p2] = room.players;
-  const questions = room.game.questions;
+  const gameRound = room.currentRound;
+  const roundData = room.game.rounds[gameRound];
+  const prefix = `${gameRound}_`;
+
   let p1Score = 0, p2Score = 0;
   const p1Results = {}, p2Results = {};
 
-  questions.forEach((q, i) => {
-    const round = i + 1;
-    const p1Pick = (p1.picks || {})[round] ?? 0;
-    const p2Pick = (p2.picks || {})[round] ?? 0;
+  roundData.questions.forEach((q, i) => {
+    const key = String(i);
+    const p1Pick = ((p1.picks || {})[key]) ?? 0;
+    const p2Pick = ((p2.picks || {})[key]) ?? 0;
     const p1Right = p1Pick === q.answerIndex;
     const p2Right = p2Pick === q.answerIndex;
     if (p1Right) p1Score++;
     if (p2Right) p2Score++;
-    p1Results[round] = { picked: p1Pick, correct: q.answerIndex, right: p1Right };
-    p2Results[round] = { picked: p2Pick, correct: q.answerIndex, right: p2Right };
+    p1Results[key] = { picked: p1Pick, correct: q.answerIndex, right: p1Right };
+    p2Results[key] = { picked: p2Pick, correct: q.answerIndex, right: p2Right };
   });
 
-  // Emit to room — each client knows their own name
-  io.to(code).emit('game_over', {
-    scores: { [p1.name]: p1Score, [p2.name]: p2Score },
+  // Update cumulative scores
+  if (!p1.roundScores) p1.roundScores = [0, 0];
+  if (!p2.roundScores) p2.roundScores = [0, 0];
+  p1.roundScores[gameRound] = p1Score;
+  p2.roundScores[gameRound] = p2Score;
+  p1.score = p1.roundScores.reduce((a, b) => a + b, 0);
+  p2.score = p2.roundScores.reduce((a, b) => a + b, 0);
+
+  await db.ref(`rooms/${code}/players`).set([p1, p2]);
+  await db.ref(`rooms/${code}`).update({ phase: 'round_result' });
+
+  io.to(code).emit('round_result', {
+    gameRound,
+    roundScores: { [p1.name]: p1Score, [p2.name]: p2Score },
+    totalScores: { [p1.name]: p1.score, [p2.name]: p2.score },
+    changes: { [p1.name]: (p1.changes || [])[gameRound] || 0, [p2.name]: (p2.changes || [])[gameRound] || 0 },
     results: { [p1.name]: p1Results, [p2.name]: p2Results },
-    changes: { [p1.name]: p1.changes || 0, [p2.name]: p2.changes || 0 },
-    faces: room.game.faces,
-    questions: questions.map(q => q.text)
+    faces: roundData.faces
+  });
+
+  if (gameRound < 1) {
+    // Start round 2 after delay
+    setTimeout(() => startQuestion(code, 1, 0), 8000);
+  } else {
+    // Game over
+    setTimeout(() => endGame(code), 1000);
+  }
+}
+
+async function endGame(code) {
+  const room = await getRoom(code);
+  if (!room) return;
+
+  const [p1, p2] = room.players;
+  const allResults = {};
+  const allFaces = [];
+
+  room.game.rounds.forEach((roundData, ri) => {
+    roundData.faces.forEach(f => allFaces.push(f));
+    roundData.questions.forEach((q, qi) => {
+      const key = `${ri}_${qi}`;
+      const globalIdx = ri * 3 + qi;
+      allResults[p1.name] = allResults[p1.name] || {};
+      allResults[p2.name] = allResults[p2.name] || {};
+      const p1Pick = (p1.picks || {})[qi] ?? 0;
+      const p2Pick = (p2.picks || {})[qi] ?? 0;
+      // Offset face index by round
+      const offset = ri * 3;
+      allResults[p1.name][globalIdx + 1] = {
+        picked: p1Pick + offset,
+        correct: q.answerIndex + offset,
+        right: p1Pick === q.answerIndex
+      };
+      allResults[p2.name][globalIdx + 1] = {
+        picked: p2Pick + offset,
+        correct: q.answerIndex + offset,
+        right: p2Pick === q.answerIndex
+      };
+    });
+  });
+
+  io.to(code).emit('game_over', {
+    scores: { [p1.name]: p1.score, [p2.name]: p2.score },
+    results: allResults,
+    faces: allFaces,
+    changes: {
+      [p1.name]: (p1.changes || []).reduce((a, b) => a + b, 0),
+      [p2.name]: (p2.changes || []).reduce((a, b) => a + b, 0)
+    }
   });
 
   setTimeout(() => deleteRoom(code), 30000);
