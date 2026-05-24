@@ -411,6 +411,7 @@ function highlightActiveSlot(round) {
 
 // ── FINAL PHASE ──
 socket.on('final_phase', ({ picks, questions, faces }) => {
+  _finalSubmitted = false;
   myPicks = picks[myName] || {};
   oppPicks = picks[oppName] || {};
   finalPicks = { ...myPicks };
@@ -420,7 +421,7 @@ socket.on('final_phase', ({ picks, questions, faces }) => {
   showGenericPopup('You can change your\nselections now!', () => {
     show('screen-final');
     renderFinalPhase(questions, faces || gameData.faces);
-    startTimer('final-timer-fill', 15, submitFinal);
+    startTimer('final-timer-fill', 25, submitFinal);
   });
 });
 
@@ -501,8 +502,12 @@ function swapFinalCards(faceA, faceB) {
   }
 }
 
+let _finalSubmitted = false;
 function submitFinal() {
+  if (_finalSubmitted) return;
+  _finalSubmitted = true;
   stopTimer();
+  document.getElementById('status-bar').textContent = 'LOCKED IN — WAITING FOR OPPONENT…';
   socket.emit('submit_final', { picks: finalPicks, changes: _finalChanges });
   _finalChanges = 0;
 }

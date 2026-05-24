@@ -242,7 +242,6 @@ async function startFinalPhase(code) {
   if (!room) return;
   await db.ref(`rooms/${code}`).update({ phase: 'final' });
   const [p1, p2] = room.players;
-  // Emit to room — client sorts out their own vs opponent picks
   io.to(code).emit('final_phase', {
     picks: {
       [p1.name]: p1.picks || {},
@@ -251,6 +250,18 @@ async function startFinalPhase(code) {
     questions: room.game.questions.map(q => q.text),
     faces: room.game.faces
   });
+  // Force resolve after 20s in case a player doesn't submit
+  setTimeout(async () => {
+    const r = await getRoom(code);
+    if (r && r.phase === 'final') {
+      console.log(`Force resolving game ${code} after timeout`);
+      // Mark any unsubmitted players as submitted with current picks
+      const players = r.players;
+      players.forEach(p => { if (!p.finalSubmitted) p.finalSubmitted = true; });
+      await db.ref(`rooms/${code}/players`).set(players);
+      resolveGame(code);
+    }
+  }, 35000);
 }
 
 async function resolveGame(code) {
