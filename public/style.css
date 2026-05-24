@@ -986,9 +986,19 @@ html, body {
   font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
   color: var(--mid); margin-bottom: 8px; padding: 0 2px;
 }
-.final-cards-row { display: flex; gap: 6px; width: 100%; }
+.final-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+/* Last row of 2 — centre them */
+.final-card-col:nth-child(4) { grid-column: 1; }
+.final-card-col:nth-child(5) { grid-column: 2; }
+
 .final-card-col {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
 .final-card-img {
   width: 100%; aspect-ratio: 3/4; border-radius: 8px;
