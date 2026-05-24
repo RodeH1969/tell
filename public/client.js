@@ -137,6 +137,34 @@ function unlockAudio() {
 document.addEventListener('touchstart', unlockAudio, { once: true });
 document.addEventListener('click', unlockAudio, { once: true });
 
+// ── AUDIO BUFFERS ──
+const _audioBuffers = {};
+let _questionSource = null;
+
+function preloadAudio(questions) {
+  const ctx = getAudioCtx();
+  questions.forEach(q => {
+    if (!q.audio || _audioBuffers[q.audio]) return;
+    fetch(`/audio/${q.audio}`)
+      .then(r => r.arrayBuffer())
+      .then(ab => ctx.decodeAudioData(ab, decoded => {
+        _audioBuffers[q.audio] = decoded;
+      }))
+      .catch(e => console.log('Preload failed:', q.audio, e));
+  });
+}
+
+function playBuffer(ctx, buf) {
+  if (_questionSource) { try { _questionSource.stop(); } catch(e) {} }
+  _questionSource = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  _questionSource.buffer = buf;
+  gain.gain.value = 0.9;
+  _questionSource.connect(gain);
+  gain.connect(ctx.destination);
+  _questionSource.start(0);
+}
+
 function playQuestion(filename) {
   if (_questionAudio) { _questionAudio.pause(); _questionAudio = null; }
   _questionAudio = new Audio(`/audio/${filename}`);
