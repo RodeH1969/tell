@@ -311,8 +311,9 @@ function pickCard(faceIndex) {
 }
 
 // ── LIVE PICK ──
-socket.on('pick_made', ({ byMe, faceIndex }) => {
-  if (!byMe) {
+socket.on('pick_made', ({ submitterName, faceIndex }) => {
+  const isMe = submitterName === myName;
+  if (!isMe) {
     document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
       if (i === faceIndex) {
         if (c.classList.contains('my-pick')) c.classList.add('both-pick');
@@ -323,11 +324,12 @@ socket.on('pick_made', ({ byMe, faceIndex }) => {
 });
 
 // ── ROUND REVEAL ──
-socket.on('round_reveal', ({ round, myPicks: mp, oppPicks: op }) => {
-  myPicks = mp; oppPicks = op;
+socket.on('round_reveal', ({ round, picks }) => {
+  myPicks = picks[myName] || {};
+  oppPicks = picks[oppName] || {};
   stopTimer();
   document.getElementById('status-bar').textContent = '';
-  revealStripRow(round, mp, op);
+  revealStripRow(round, myPicks, oppPicks);
 });
 
 // ── STRIP ──
@@ -386,10 +388,11 @@ function highlightActiveSlot(round) {
 }
 
 // ── FINAL PHASE ──
-socket.on('final_phase', ({ myPicks: mp, oppPicks: op, questions, faces }) => {
-  myPicks = mp; oppPicks = op;
-  finalPicks = { ...mp };
-  finalOppPicks = { ...op };
+socket.on('final_phase', ({ picks, questions, faces }) => {
+  myPicks = picks[myName] || {};
+  oppPicks = picks[oppName] || {};
+  finalPicks = { ...myPicks };
+  finalOppPicks = { ...oppPicks };
   finalSelectedCard = null;
 
   showGenericPopup('You can change your\nselections now!', () => {

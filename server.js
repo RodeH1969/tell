@@ -1,8 +1,7 @@
-// ── TELL server.js v4 — Firebase Realtime Database ──
+// ── TELL server.js v5 ──
 
 const express = require('express');
 const http = require('http');
-const https = require('https');
 const { Server } = require('socket.io');
 const path = require('path');
 const admin = require('firebase-admin');
@@ -18,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/data', express.static(path.join(__dirname, 'data')));
 app.get('/ping', (req, res) => res.send('ok'));
 
-// ── FIREBASE INIT ──
+// ── FIREBASE ──
 let serviceAccount;
 try {
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -26,7 +25,6 @@ try {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     console.log('Firebase env var parsed OK, project:', serviceAccount.project_id);
   } else {
-    console.log('Loading Firebase from firebase-key.json...');
     serviceAccount = require('./firebase-key.json');
     console.log('Firebase key file loaded OK');
   }
@@ -41,13 +39,11 @@ admin.initializeApp({
 });
 
 const db = admin.database();
-db.ref('.info/connected').on('value', snap => {
-  console.log('Firebase connected:', snap.val());
-});
+db.ref('.info/connected').on('value', snap => console.log('Firebase connected:', snap.val()));
 console.log('Firebase admin initialized');
 
 const GAMES = require('./data/questions.json');
-const socketRoom = {}; // socketId -> roomCode (in-memory, lightweight)
+const socketRoom = {}; // socketId -> roomCode
 
 function generateCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -60,26 +56,16 @@ function shuffleGame(game) {
     const j = Math.floor(Math.random() * (i + 1));
     [faces[i], faces[j]] = [faces[j], faces[i]];
   }
-  g.questions.forEach((q, qi) => {
+  g.questions.forEach(q => {
     const answerName = game.faces[q.answerIndex].name;
     q.answerIndex = faces.findIndex(f => f.name === answerName);
   });
   return g;
 }
 
-async function saveRoom(code, room) {
-  await db.ref(`rooms/${code}`).set(room);
-  // Auto-delete after 30 minutes
-  setTimeout(() => db.ref(`rooms/${code}`).remove(), 30 * 60 * 1000);
-}
-
 async function getRoom(code) {
   const snap = await db.ref(`rooms/${code}`).once('value');
   return snap.val();
-}
-
-async function updateRoom(code, updates) {
-  await db.ref(`rooms/${code}`).update(updates);
 }
 
 async function deleteRoom(code) {
@@ -104,7 +90,8 @@ io.on('connection', (socket) => {
       roundPicks: {}
     };
 
-    await saveRoom(code, room);
+    await db.ref(`rooms/${code}`).set(room);
+    setTimeout(() => db.ref(`rooms/${code}`).remove(), 30 * 60 * 1000);
     socketRoom[socket.id] = code;
     socket.join(code);
     socket.emit('room_created', { code });
@@ -115,47 +102,39 @@ io.on('connection', (socket) => {
     console.log(`JOIN: name=${name} code=${code}`);
     const room = await getRoom(code);
 
-    if (!room) {
-      console.log(`FAIL: room ${code} not in Firebase`);
-      return socket.emit('join_error', { message: 'Room not found.' });
-    }
-    if (room.players && room.players.length >= 2)
-      return socket.emit('join_error', { message: 'Room is full.' });
-    if (room.phase !== 'waiting')
-      return socket.emit('join_error', { message: 'Game already started.' });
+    if (!room) return socket.emit('join_error', { message: 'Room not found.' });
+    if (room.players && room.players.length >= 2) return socket.emit('join_error', { message: 'Room is full.' });
+    if (room.phase !== 'waiting') return socket.emit('join_error', { message: 'Game already started.' });
 
     const players = room.players || [];
     players.push({ id: socket.id, name, score: 0, picks: {} });
 
     const shuffledGame = shuffleGame(room.game);
 
-    await db.ref(`rooms/${code}`).update({
-      players,
-      game: shuffledGame,
-      phase: 'playing'
-    });
+    await db.ref(`rooms/${code}`).update({ players, game: shuffledGame, phase: 'playing' });
 
     socketRoom[socket.id] = code;
     socket.join(code);
 
-    const [p1, p2] = players;
-    // Emit to room channel — each client identifies themselves by name
+    // ── EMIT game_start TO ROOM — both players get it ──
     io.to(code).emit('game_start', {
       game: shuffledGame,
       players: [
-        { name: p1.name, playerIndex: 0 },
-        { name: p2.name, playerIndex: 1 }
+        { name: players[0].name, playerIndex: 0 },
+        { name: players[1].name, playerIndex: 1 }
       ]
     });
 
-    setTimeout(() => startRound(code), 2000);
+    // Wait for flip animation to complete before starting round 1
+    // Flip takes ~3.5s + Let's Play popup 2.5s + 1s delay = 7s total
+    setTimeout(() => startRound(code), 8000);
   });
 
-  // REJOIN ROOM (creator reconnects while waiting)
+  // REJOIN ROOM
   socket.on('rejoin_room', async ({ code, name }) => {
     const room = await getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.name === name);
+    const player = (room.players || []).find(p => p.name === name);
     if (player) {
       console.log(`REJOIN: ${name} back in room ${code}`);
       player.id = socket.id;
@@ -184,9 +163,13 @@ io.on('connection', (socket) => {
 
     await db.ref(`rooms/${code}`).update({ roundPicks, players });
 
-    const [p1, p2] = players;
-    io.to(p1.id).emit('pick_made', { round: room.round, byMe: socket.id === p1.id, faceIndex });
-    io.to(p2.id).emit('pick_made', { round: room.round, byMe: socket.id === p2.id, faceIndex });
+    // Emit pick_made to ROOM not individual IDs
+    const submitterId = socket.id;
+    io.to(code).emit('pick_made', {
+      round: room.round,
+      submitterName: player ? player.name : '',
+      faceIndex
+    });
 
     if (Object.keys(roundPicks).length === 2) revealRound(code);
   });
@@ -207,7 +190,6 @@ io.on('connection', (socket) => {
     }
 
     await db.ref(`rooms/${code}`).update({ players });
-
     if (players.every(p => p.finalSubmitted)) resolveGame(code);
   });
 
@@ -231,6 +213,7 @@ async function startRound(code) {
   const round = (room.round || 0) + 1;
   await db.ref(`rooms/${code}`).update({ round, roundPicks: {}, phase: 'picking' });
   const q = room.game.questions[round - 1];
+  // Emit to room
   io.to(code).emit('round_start', { round, totalRounds: 5, question: q.text });
 }
 
@@ -239,8 +222,14 @@ async function revealRound(code) {
   if (!room) return;
   await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
   const [p1, p2] = room.players;
-  io.to(p1.id).emit('round_reveal', { round: room.round, myPicks: p1.picks || {}, oppPicks: p2.picks || {} });
-  io.to(p2.id).emit('round_reveal', { round: room.round, myPicks: p2.picks || {}, oppPicks: p1.picks || {} });
+  // Emit to room — client identifies their own picks by name
+  io.to(code).emit('round_reveal', {
+    round: room.round,
+    picks: {
+      [p1.name]: p1.picks || {},
+      [p2.name]: p2.picks || {}
+    }
+  });
   setTimeout(() => {
     if (room.round < 5) setTimeout(() => startRound(code), 2000);
     else setTimeout(() => startFinalPhase(code), 2000);
@@ -252,10 +241,15 @@ async function startFinalPhase(code) {
   if (!room) return;
   await db.ref(`rooms/${code}`).update({ phase: 'final' });
   const [p1, p2] = room.players;
-  const questions = room.game.questions.map(q => q.text);
-  const faces = room.game.faces;
-  io.to(p1.id).emit('final_phase', { myPicks: p1.picks || {}, oppPicks: p2.picks || {}, questions, faces });
-  io.to(p2.id).emit('final_phase', { myPicks: p2.picks || {}, oppPicks: p1.picks || {}, questions, faces });
+  // Emit to room — client sorts out their own vs opponent picks
+  io.to(code).emit('final_phase', {
+    picks: {
+      [p1.name]: p1.picks || {},
+      [p2.name]: p2.picks || {}
+    },
+    questions: room.game.questions.map(q => q.text),
+    faces: room.game.faces
+  });
 }
 
 async function resolveGame(code) {
@@ -266,6 +260,7 @@ async function resolveGame(code) {
   const questions = room.game.questions;
   let p1Score = 0, p2Score = 0;
   const p1Results = {}, p2Results = {};
+
   questions.forEach((q, i) => {
     const round = i + 1;
     const p1Pick = (p1.picks || {})[round] ?? 0;
@@ -277,8 +272,15 @@ async function resolveGame(code) {
     p1Results[round] = { picked: p1Pick, correct: q.answerIndex, right: p1Right };
     p2Results[round] = { picked: p2Pick, correct: q.answerIndex, right: p2Right };
   });
-  io.to(p1.id).emit('game_over', { won: p1Score > p2Score, draw: p1Score === p2Score, myScore: p1Score, oppScore: p2Score, myName: p1.name, oppName: p2.name, myResults: p1Results, faces: room.game.faces, questions: questions.map(q => q.text) });
-  io.to(p2.id).emit('game_over', { won: p2Score > p1Score, draw: p1Score === p2Score, myScore: p2Score, oppScore: p1Score, myName: p2.name, oppName: p1.name, myResults: p2Results, faces: room.game.faces, questions: questions.map(q => q.text) });
+
+  // Emit to room — each client knows their own name
+  io.to(code).emit('game_over', {
+    scores: { [p1.name]: p1Score, [p2.name]: p2Score },
+    results: { [p1.name]: p1Results, [p2.name]: p2Results },
+    faces: room.game.faces,
+    questions: questions.map(q => q.text)
+  });
+
   setTimeout(() => deleteRoom(code), 30000);
 }
 
