@@ -513,46 +513,72 @@ function submitFinal() {
 }
 
 // ── GAME OVER ──
-socket.on('game_over', ({ scores, results, faces, questions }) => {
+socket.on('game_over', ({ scores, results, changes, faces, questions }) => {
   stopMusic();
-  show('screen-result');
 
-  const myScore  = scores[myName]  || 0;
-  const oppScore = scores[oppName] || 0;
-  const myResults = results[myName] || {};
+  const myScore    = scores[myName]   || 0;
+  const oppScore   = scores[oppName]  || 0;
+  const myChanges  = changes ? (changes[myName]  || 0) : 0;
+  const oppChanges = changes ? (changes[oppName] || 0) : 0;
+  const myResults  = results[myName]  || {};
+  const oppResults = results[oppName] || {};
   const won  = myScore > oppScore;
   const draw = myScore === oppScore;
-
-  const verdict = document.getElementById('result-verdict');
-  if (draw)     { verdict.textContent = 'DRAW';     verdict.className = 'draw'; }
-  else if (won) { verdict.textContent = 'YOU WIN';  verdict.className = 'win'; launchFireworks(); }
-  else          { verdict.textContent = 'YOU LOSE'; verdict.className = 'lose'; }
+  const usedFaces = faces || gameData.faces;
 
   const myColourHex  = myColour === 'pink' ? '#e75480' : '#3498db';
   const oppColourHex = myColour === 'pink' ? '#3498db' : '#e75480';
 
-  document.getElementById('result-scores').innerHTML = `
-    <div class="rs-player"><span class="rs-name" style="color:${myColourHex}">${myName.toUpperCase()}</span><span class="rs-num">${myScore}</span></div>
-    <span class="rs-vs">VS</span>
-    <div class="rs-player"><span class="rs-name" style="color:${oppColourHex}">${oppName.toUpperCase()}</span><span class="rs-num">${oppScore}</span></div>
-  `;
+  // ── BLUFF POPUP ──
+  const bluffText = `${myName.toUpperCase()} made ${myChanges} change${myChanges !== 1 ? 's' : ''}.\n${oppName.toUpperCase()} made ${oppChanges} change${oppChanges !== 1 ? 's' : ''}.\n\nWho blinked?`;
+  showGenericPopup(bluffText, () => {
 
-  const usedFaces = faces || gameData.faces;
-  document.getElementById('result-breakdown').innerHTML = (questions || []).map((q, i) => {
-    const round = i + 1;
-    const r = myResults[round];
-    if (!r) return '';
-    const face = usedFaces[r.picked];
-    if (!face) return '';
-    return `
-      <div class="bd-row ${r.right ? 'correct' : 'wrong'}">
-        <span class="bd-q">Q${round}</span>
-        <div class="bd-thumb"><img src="${cardImg(face)}" alt="${face.name}"></div>
-        <span class="bd-name">${face.name}</span>
-        <span class="bd-icon">${r.right ? '✓' : '✗'}</span>
-      </div>
-    `;
-  }).join('');
+    show('screen-result');
+    document.getElementById('result-verdict').textContent = '';
+    document.getElementById('result-scores').textContent = '';
+
+    // Build player result rows
+    const makeRow = (name, playerResults, colour) => {
+      const cards = [1,2,3,4,5].map(round => {
+        const r = playerResults[round];
+        if (!r) return '<div class="result-card-col"></div>';
+        const face = usedFaces[r.picked];
+        const correctFace = usedFaces[r.correct];
+        if (!face) return '';
+        return `
+          <div class="result-card-col">
+            <div class="result-card-img ${r.right ? 'correct' : 'wrong'}">
+              <img src="${cardImg(face)}" alt="${face.name}">
+              <div class="result-card-icon">${r.right ? '✓' : '✗'}</div>
+            </div>
+            <div class="result-card-name ${r.right ? 'name-correct' : 'name-wrong'}">${face.name}</div>
+            ${!r.right && correctFace ? `<div class="result-card-answer">✓ ${correctFace.name}</div>` : ''}
+          </div>`;
+      }).join('');
+      return `
+        <div class="result-player-section">
+          <h3 class="result-player-name" style="color:${colour}">${name.toUpperCase()} — ${playerResults ? Object.values(playerResults).filter(r=>r.right).length : 0}/5</h3>
+          <div class="result-cards-row">${cards}</div>
+        </div>`;
+    };
+
+    document.getElementById('result-breakdown').innerHTML =
+      makeRow(myName, myResults, myColourHex) +
+      makeRow(oppName, oppResults, oppColourHex);
+
+    // ── WINNER POPUP after 10 seconds ──
+    setTimeout(() => {
+      const winText = won  ? `🏆 ${myName.toUpperCase()} WINS!` :
+                      draw ? `IT'S A DRAW!` :
+                             `🏆 ${oppName.toUpperCase()} WINS!`;
+      showGenericPopup(winText, () => {
+        if (won) launchFireworks();
+        const v = document.getElementById('result-verdict');
+        v.textContent = won ? 'YOU WIN' : draw ? 'DRAW' : 'YOU LOSE';
+        v.className = won ? 'win' : draw ? 'draw' : 'lose';
+      });
+    }, 10000);
+  });
 });
 
 function shareResult() {
