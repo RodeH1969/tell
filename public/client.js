@@ -126,27 +126,31 @@ function shareInvite() {
 // ── QUESTION AUDIO ──
 let _questionAudio = null;
 let _audioUnlocked = false;
-
-// Unlock audio on first user interaction (required for iOS)
-function unlockAudio() {
-  if (_audioUnlocked) return;
-  _audioUnlocked = true;
-  const buf = new Audio();
-  buf.play().catch(() => {});
-}
-document.addEventListener('touchstart', unlockAudio, { once: true });
-document.addEventListener('click', unlockAudio, { once: true });
-
-// ── QUESTION AUDIO ──
-// Use HTML Audio elements preloaded at game start
 const _audioElements = {};
 let _pendingAudio = null;
+
+function showAudioButton() {
+  const btn = document.getElementById('audio-play-btn');
+  if (!btn) return;
+  btn.style.display = 'flex';
+  btn.onclick = () => { unlockAudio(); playPendingAudio(); };
+}
+
+function hideAudioButton() {
+  const btn = document.getElementById('audio-play-btn');
+  if (!btn) return;
+  btn.style.display = 'none';
+  btn.onclick = null;
+}
 
 function preloadAudio(questions) {
   questions.forEach(q => {
     if (!q.audio || _audioElements[q.audio]) return;
     const a = new Audio(`/audio/${q.audio}`);
     a.preload = 'auto';
+    a.playsInline = true;
+    a.setAttribute('playsinline', '');
+    a.setAttribute('webkit-playsinline', '');
     a.volume = 0.9;
     _audioElements[q.audio] = a;
     a.load();
@@ -155,18 +159,42 @@ function preloadAudio(questions) {
 
 function playQuestion(filename) {
   _pendingAudio = filename;
+  showAudioButton();
 }
 
 function playPendingAudio() {
   if (!_pendingAudio) return;
   const filename = _pendingAudio;
-  _pendingAudio = null;
   const a = _audioElements[filename] || new Audio(`/audio/${filename}`);
+  _audioElements[filename] = a;
+  a.preload = 'auto';
+  a.playsInline = true;
+  a.setAttribute('playsinline', '');
+  a.setAttribute('webkit-playsinline', '');
   a.volume = 0.9;
   a.currentTime = 0;
-  a.play().catch(e => console.log('Audio play error:', e));
-  _audioElements[filename] = a;
+  const p = a.play();
+  if (p && typeof p.then === 'function') {
+    p.then(() => { _pendingAudio = null; hideAudioButton(); })
+     .catch(e => { console.log('Audio play error', e); showAudioButton(); });
+  } else {
+    _pendingAudio = null;
+    hideAudioButton();
+  }
 }
+
+function unlockAudio() {
+  const firstUnlock = !_audioUnlocked;
+  _audioUnlocked = true;
+  try {
+    const ctx = getAudioCtx();
+    if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+  } catch(e) {}
+  if (firstUnlock && _pendingAudio) playPendingAudio();
+}
+
+document.addEventListener('touchstart', unlockAudio, { passive: true });
+document.addEventListener('click', unlockAudio);
 
 // ── CARD IMAGE PATH ──
 function cardImg(face, side = 'back') {
@@ -265,12 +293,11 @@ socket.on('round_start', ({ round, totalRounds, question }) => {
 
   highlightActiveSlot(round);
 
+  // Queue audio BEFORE showing popup so tap can trigger it
+  const qData = gameData.questions[round-1];
+  if (qData && qData.audio) playQuestion(qData.audio);
+
   showRoundPopup(round, () => {
-    // Play audio question
-    const qData = gameData.questions[round-1];
-    if (qData && qData.audio) {
-      playQuestion(qData.audio);
-    }
     // Unlock non-used faces
     document.querySelectorAll('#faces-row .face-card').forEach((c, i) => {
       if (!usedFaces.has(i)) c.classList.remove('locked');
@@ -577,7 +604,6 @@ function ringBell(ctx, st) {
 
 // ── POPUPS ──
 function showRoundPopup(round, callback) {
-  unlockAudio();
   boxingBell();
   showPopupText(`TELL ${round}`, '58px', 1800, callback);
 }
