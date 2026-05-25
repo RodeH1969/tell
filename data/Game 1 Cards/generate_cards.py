@@ -9,10 +9,11 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 FILES = [
     "Adam Smith.png","Ben Shapiro.png","Benjamin Franklin.png","Bobby Charlton.png","Charlie Chaplin.png",
-    "Edmund Hilary.jpg","George Washington.png","James Cook.png","JD Salinger.jpg","John Newcombe.png",
-    "Johnny Carson.png","Keith Miller.jpeg","Liberace.jpg","Mark Twain.png","Micahel Caine.png",
-    "Mozart.png","Nikola Tesla.png","Pete Hegseth.png","Pierre Trudeau.jpg","Randy Orton.png",
-    "Richard Burton.png","Richie Mccaw.png","Robert Kennedy Jnr.png","Sigmund Freud.png","Winston Churchill.png"
+    "Edmund Hilary.jpg","George Washington.png","Henry Ford.png","James Cook.png","JD Salinger.jpg",
+    "John Newcombe.png","Johnny Carson.png","Keith Miller.jpeg","Laurence Olivier.png","Liberace.jpg",
+    "Marlon Brando.png","Mark Twain.png","Micahel Caine.png","Mozart.png","Nigel Farage.png",
+    "Nikola Tesla.png","Pete Hegseth.png","Pierre Trudeau.jpg","Randy Orton.png","Richard Burton.png",
+    "Richie Mccaw.png","Robert Kennedy Jnr.png","Sigmund Freud.png","Voltaire.png","Winston Churchill.png"
 ]
 
 SUITS = [
@@ -195,12 +196,16 @@ def main():
             print(f"Missing source image: {src}")
             continue
         name = Path(filename).stem
+        # Skip if already exists
+        if (OUT / f"{name} - front.png").exists() and (OUT / f"{name} - back.png").exists():
+            print(f"Skipping: {name} (already exists)")
+            continue
         portrait = Image.open(src)
         suit, color = SUITS[i % len(SUITS)]
         draw_front(logo, suit, color, OUT / f"{name} - front.png")
         draw_back(name, portrait, suit, color, OUT / f"{name} - back.png")
         print(f"Created: {name} [{suit}]")
-    print(f"Saved PNG cards to: {OUT}")
+    print(f"Done. Cards saved to: {OUT}")
 
 if __name__ == "__main__":
     main()
