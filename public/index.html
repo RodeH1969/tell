@@ -143,6 +143,13 @@
 </div>
 
 <canvas id="fireworks-canvas"></canvas>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    databaseURL: 'https://tell-game-default-rtdb.firebaseio.com'
+  });
+</script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
 </body>
