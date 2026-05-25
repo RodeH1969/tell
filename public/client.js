@@ -677,21 +677,23 @@ function startFinalTimer(seconds) {
 }
 
 function renderFinalPhase(questions, faces) {
+  const myColourHex=myColour==='red'?'#e53e3e':'#3182ce';
   const myRow=document.getElementById('final-my-cards'); myRow.innerHTML='';
   faces.forEach((face,i)=>{
     const rk=parseInt(Object.keys(finalPicks).find(r=>finalPicks[r]===i));
     const name=!isNaN(rk)?answerName(questions[rk]):'—';
     const col=document.createElement('div'); col.className='final-card-col';
-    col.innerHTML=`<div class="final-card-img"><img src="${cardImg(face)}" alt="${face.name}"></div><button class="final-name-btn" id="fcb-${i}" onclick="tapFinalCard(${i})">${name}</button>`;
+    col.innerHTML=`<div class="final-card-img my-card-img" style="border-color:${myColourHex}"><img src="${cardImg(face)}" alt="${face.name}"></div><button class="final-name-btn" id="fcb-${i}" onclick="tapFinalCard(${i})" style="border-color:${myColourHex};color:${myColourHex}">${name}</button>`;
     myRow.appendChild(col);
   });
   document.getElementById('final-opp-label').textContent=oppName.toUpperCase()+"'S CHOICES";
+  const oppColourHex=myColour==='red'?'#3182ce':'#e53e3e';
   const oppRow=document.getElementById('final-opp-cards'); oppRow.innerHTML='';
   faces.forEach((face,i)=>{
     const rk=parseInt(Object.keys(finalOppPicks).find(r=>finalOppPicks[r]===i));
     const name=!isNaN(rk)?answerName(questions[rk]):'—';
     const col=document.createElement('div'); col.className='final-card-col';
-    col.innerHTML=`<div class="final-card-img"><img src="${cardImg(face)}" alt="${face.name}"></div><div class="final-name-btn opp-name-btn">${name}</div>`;
+    col.innerHTML=`<div class="final-card-img opp-card-img"><img src="${cardImg(face)}" alt="${face.name}"></div><div class="final-name-btn opp-name-btn" style="border-color:${oppColourHex};color:${oppColourHex}">${name}</div>`;
     oppRow.appendChild(col);
   });
 }

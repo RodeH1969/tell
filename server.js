@@ -186,7 +186,12 @@ io.on('connection', (socket) => {
     const players = room.players;
     const player = players.find(p => p.name === name);
     if (player) {
-      Object.assign(player.picks, picks);
+      if (!player.picks) player.picks = {};
+      // Store final picks with round prefix e.g. final_0_0, final_0_1
+      const round = room.currentRound;
+      Object.keys(picks).forEach(qi => {
+        player.picks[`final_${round}_${qi}`] = picks[qi];
+      });
       player.finalSubmitted = true;
       if (!player.changes) player.changes = [0,0];
       player.changes[room.currentRound] = changes || 0;
@@ -260,8 +265,11 @@ async function resolveRound(code) {
   const p1Results = {}, p2Results = {};
 
   roundData.questions.forEach((q, i) => {
-    const p1Pick = ((p1.picks || {})[String(i)]) ?? 0;
-    const p2Pick = ((p2.picks || {})[String(i)]) ?? 0;
+    // Use final picks if available, fall back to initial picks
+    const p1FinalKey = `final_${gameRound}_${i}`;
+    const p2FinalKey = `final_${gameRound}_${i}`;
+    const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[String(i)]) ?? 0;
+    const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[String(i)]) ?? 0;
     const p1Right = p1Pick === q.answerIndex;
     const p2Right = p2Pick === q.answerIndex;
     if (p1Right) p1Score++;
@@ -310,8 +318,10 @@ async function endGame(code) {
     roundData.questions.forEach((q, qi) => {
       const globalIdx = ri * 3 + qi;
       const offset = ri * 3;
-      const p1Pick = (p1.picks || {})[String(qi)] ?? 0;
-      const p2Pick = (p2.picks || {})[String(qi)] ?? 0;
+      const p1FinalKey = `final_${ri}_${qi}`;
+      const p2FinalKey = `final_${ri}_${qi}`;
+      const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[String(qi)]) ?? 0;
+      const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[String(qi)]) ?? 0;
       allResults[p1.name][globalIdx] = { picked: p1Pick + offset, correct: q.answerIndex + offset, right: p1Pick === q.answerIndex };
       allResults[p2.name][globalIdx] = { picked: p2Pick + offset, correct: q.answerIndex + offset, right: p2Pick === q.answerIndex };
     });
