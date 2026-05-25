@@ -254,12 +254,22 @@ async function revealQuestion(code) {
   await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
 
   const [p1, p2] = room.players;
+  // Extract just this round's picks, keyed by questionIdx only
+  const roundPrefix = `${room.currentRound}_`;
+  const extractRoundPicks = (picks) => {
+    const result = {};
+    Object.keys(picks || {}).forEach(k => {
+      if (k.startsWith(roundPrefix)) result[parseInt(k.replace(roundPrefix,''))] = picks[k];
+    });
+    return result;
+  };
+
   io.to(code).emit('question_reveal', {
     gameRound: room.currentRound,
     questionIdx: room.round,
     picks: {
-      [p1.name]: p1.picks || {},
-      [p2.name]: p2.picks || {}
+      [p1.name]: extractRoundPicks(p1.picks),
+      [p2.name]: extractRoundPicks(p2.picks)
     }
   });
 

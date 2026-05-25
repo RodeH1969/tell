@@ -26,7 +26,7 @@ let _pendingAudio=null;
 function startMusic() {
   if (_music) return; unlockAudio();
   _music = new Audio('/telltheme.mp3');
-  _music.loop=true; _music.volume=0.15;
+  _music.loop=true; _music.volume=0.07;
   _music.play().catch(()=>{});
 }
 function stopMusic() { if(_music){_music.pause();_music.currentTime=0;_music=null;} }
@@ -235,6 +235,8 @@ socket.on('question_start',({gameRound,questionIdx,totalQuestions,question,faces
   document.getElementById('status-bar').textContent='';
 
   if(questionIdx===0){
+    // New round — reset used faces for this round
+    usedFaces = new Set();
     renderCards(faces);
     setTimeout(()=>flipCardsToFace(faces),100);
     renderScoreboard(3);
@@ -596,7 +598,6 @@ socket.on('round_result',({gameRound,roundScores,totalScores,changes,results,fac
     showGenericPopup(scoreText,()=>{
       if(!isLast){
         show('screen-game');
-        usedFaces=new Set();
         renderScoreboard(3);
         showGenericPopup(`⚡ NOW FOR ROUND 2 ⚡\nAre you ready?`,()=>{ show('screen-game'); });
       } else {
