@@ -584,29 +584,63 @@ socket.on('round_result',({gameRound,roundScores,totalScores,changes,results,fac
   const myRound=roundScores[myName]||0, oppRound=roundScores[oppName]||0;
   const myTotal=totalScores[myName]||0, oppTotal=totalScores[oppName]||0;
   const myC=changes[myName]||0, oppC=changes[oppName]||0;
+  const myResults=results[myName]||{}, oppResults=results[oppName]||{};
+  const isLast=gameRound===1;
+  const myHex=myColour==='red'?'#e53e3e':'#3182ce';
+  const oppHex=myColour==='red'?'#3182ce':'#e53e3e';
 
   document.getElementById('hdr-my-score').textContent=myTotal;
   document.getElementById('hdr-opp-score').textContent=oppTotal;
 
-  const bluffText=`${myName.toUpperCase()} made ${myC} change${myC!==1?'s':''}.\n${oppName.toUpperCase()} made ${oppC} change${oppC!==1?'s':''}.\n\nWho blinked?`;
-  showGenericPopup(bluffText,()=>{
-    const isLast=gameRound===1;
-    const scoreText=isLast
-      ? `FINAL SCORE\n${myName.toUpperCase()} ${myTotal} — ${oppTotal} ${oppName.toUpperCase()}`
-      : `ROUND ${gameRound+1} SCORES\n${myName.toUpperCase()} ${myRound} — ${oppRound} ${oppName.toUpperCase()}\nTotal: ${myTotal} — ${oppTotal}`;
+  // Show result screen with both players cards for 10 seconds
+  show('screen-result');
+  const v=document.getElementById('result-verdict');
+  v.textContent='ROUND '+(gameRound+1)+' RESULTS';
+  v.className=''; v.style.cssText='font-size:20px;color:var(--teal);margin-bottom:8px;letter-spacing:0.1em;';
+  document.getElementById('result-scores').innerHTML='';
 
-    showGenericPopup(scoreText,()=>{
-      if(!isLast){
-        show('screen-game');
-        renderScoreboard(3);
-        showGenericPopup(`⚡ NOW FOR ROUND 2 ⚡\nAre you ready?`,()=>{ show('screen-game'); });
-      } else {
-        show('screen-game');
-      }
+  const makeRoundRow=(name,playerResults,colour)=>{
+    const cards=[0,1,2].map(qi=>{
+      const r=playerResults[qi];
+      if(!r) return '<div class="result-card-col"></div>';
+      const face=(faces||[])[r.picked], correctFace=(faces||[])[r.correct];
+      if(!face) return '';
+      return '<div class="result-card-col">'
+        +'<div class="result-card-img '+(r.right?'correct':'wrong')+'">'
+        +'<img src="'+cardImg(face)+'" alt="'+face.name+'">'
+        +'<div class="result-card-icon">'+(r.right?'✓':'✗')+'</div>'
+        +'</div>'
+        +'<div class="result-card-name '+(r.right?'name-correct':'name-wrong')+'">'+face.name+'</div>'
+        +(!r.right&&correctFace?'<div class="result-card-answer">✓ '+correctFace.name+'</div>':'')
+        +'</div>';
+    }).join('');
+    const score=Object.values(playerResults).filter(r=>r&&r.right).length;
+    return '<div class="result-player-section">'
+      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/3</h3>'
+      +'<div class="result-cards-row">'+cards+'</div>'
+      +'</div>';
+  };
+
+  document.getElementById('result-breakdown').innerHTML=
+    makeRoundRow(myName,myResults,myHex)+makeRoundRow(oppName,oppResults,oppHex);
+
+  // After 10 seconds show bluff popup then scores
+  setTimeout(()=>{
+    const bluffText=myName.toUpperCase()+' made '+myC+' change'+(myC!==1?'s':'')+'.\n'+oppName.toUpperCase()+' made '+oppC+' change'+(oppC!==1?'s':'')+'.\n\nWho blinked?';
+    showGenericPopup(bluffText,()=>{
+      const scoreText=isLast?'FINAL SCORE\n'+myName.toUpperCase()+' '+myTotal+' — '+oppTotal+' '+oppName.toUpperCase():'ROUND 1 SCORES\n'+myName.toUpperCase()+' '+myRound+' — '+oppRound+' '+oppName.toUpperCase();
+      showGenericPopup(scoreText,()=>{
+        if(!isLast){
+          show('screen-game');
+          renderScoreboard(3);
+          showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{ show('screen-game'); });
+        } else {
+          show('screen-game');
+        }
+      });
     });
-  });
+  },10000);
 });
-
 // ── GAME OVER ──
 socket.on('game_over',({scores,results,changes,faces})=>{
   stopMusic();
