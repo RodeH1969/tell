@@ -522,6 +522,7 @@ function highlightActiveSlot(idx){
 // ── FINAL PHASE ──
 function onFinalPhase(room) {
   _finalSubmitted=false; _finalChanges=0; _swapsRemaining=2; finalSelectedCard=null;
+  if(window._oppActivityInterval){ clearInterval(window._oppActivityInterval); window._oppActivityInterval=null; }
   const players=room.players||[];
   const me=players.find(p=>p.name===myName)||players[0];
   const opp=players.find(p=>p.name!==myName)||players[1];
@@ -561,7 +562,10 @@ function updateSwapCounter(){
 }
 
 function updateLockedIn(lockedIn){
-  if(!lockedIn||!lockedIn.length) return;
+  if(!lockedIn||!Array.isArray(lockedIn)||!lockedIn.length) return;
+  // Only act if we're actually on the final screen
+  const finalScreen = document.getElementById('screen-final');
+  if(!finalScreen||!finalScreen.classList.contains('active')) return;
   const oppLocked=lockedIn.includes(oppName)&&!lockedIn.includes(myName);
   if(oppLocked&&!_finalSubmitted){
     if(window._oppActivityInterval){ clearInterval(window._oppActivityInterval); window._oppActivityInterval=null; }
@@ -738,6 +742,9 @@ function onGameOver(room) {
   const oppHex=myColour==='red'?'#3182ce':'#e53e3e';
 
   show('screen-result');
+  // Show share button on final screen
+  const shareBtn2 = document.querySelector('.share-btn');
+  if(shareBtn2) shareBtn2.style.display = '';
   document.getElementById('result-verdict').innerHTML='';
   document.getElementById('result-scores').innerHTML='';
   document.getElementById('result-breakdown').innerHTML=

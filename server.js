@@ -245,7 +245,7 @@ async function startFinalPhase(code) {
   const players = room.players;
   players.forEach(p => { p.finalSubmitted = false; });
 
-  await db.ref(`rooms/${code}`).update({ phase: 'final', players });
+  await db.ref(`rooms/${code}`).update({ phase: 'final', players, lockedIn: [] });
 
   // Force resolve after 35s
   setTimeout(async () => {
@@ -273,8 +273,8 @@ async function resolveRound(code) {
     // Use final picks if available, fall back to initial picks
     const p1FinalKey = `final_${gameRound}_${i}`;
     const p2FinalKey = `final_${gameRound}_${i}`;
-    const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[String(i)]) ?? 0;
-    const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[String(i)]) ?? 0;
+    const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[`${gameRound}_${i}`]) ?? 0;
+    const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[`${gameRound}_${i}`]) ?? 0;
     const p1Right = p1Pick === q.answerIndex;
     const p2Right = p2Pick === q.answerIndex;
     if (p1Right) p1Score++;
