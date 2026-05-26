@@ -418,3 +418,53 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
   100% { background: transparent; }
 }
 .lead-change { animation: leadFlash 0.8s ease both; }
+
+/* ══ TOAST NOTIFICATIONS ══ */
+#game-toast {
+  position: fixed;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 40, 0.95);
+  color: white;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  z-index: 500;
+  white-space: nowrap;
+  transition: top 300ms cubic-bezier(0.16,1,0.3,1), opacity 300ms ease;
+  opacity: 0;
+  pointer-events: none;
+}
+#game-toast.show {
+  top: 20px;
+  opacity: 1;
+}
+
+/* ══ LOCKED BADGE ══ */
+.locked-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--green);
+  background: rgba(22,163,74,0.15);
+  border: 1px solid rgba(22,163,74,0.4);
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: namePulse 1s ease-in-out infinite;
+}
+
+/* ══ FINAL CARDS — MOBILE GRID ══ */
+.final-cards-row {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 6px;
+  width: 100%;
+}

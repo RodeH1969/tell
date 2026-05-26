@@ -194,7 +194,7 @@ function shareInvite() {
   const link=window._inviteLink;
   const showWaiting=()=>{ document.querySelector('.share-invite-btn').classList.add('hidden'); document.getElementById('waiting-status').classList.remove('hidden'); };
   if(navigator.share){ navigator.share({title:'TELL',text:'I challenge you to a game of TELL 👀',url:link}).then(showWaiting).catch(()=>showWaiting()); }
-  else{ navigator.clipboard.writeText(link).then(()=>{alert('Link copied!');showWaiting();}); }
+  else{ navigator.clipboard.writeText(link).then(()=>{ showToast('Link copied!'); showWaiting(); }); }
 }
 
 // ── REMATCH ──
@@ -343,6 +343,9 @@ function onQuestionStart(room) {
   pickedThisRound=false;
   document.getElementById('hdr-round').textContent=`R${gameRound+1} · Q${questionIdx+1}/4`;
   document.getElementById('status-bar').textContent='';
+  // Reset timer name labels
+  document.getElementById('timer-top-name').textContent=(isCreator?myName:oppName).toUpperCase();
+  document.getElementById('timer-bottom-name').textContent=(isCreator?oppName:myName).toUpperCase();
   const faces=gameData.rounds[gameRound].faces;
   if(questionIdx===0){
     usedFaces=new Set();
@@ -421,6 +424,19 @@ socket.on('pick_made',({submitterName,faceIndex})=>{
         showPickLabel(c,submitterName,oppColour);
       }
     });
+    // Show opponent locked in on their timer
+    const oppTimerId = isCreator ? 'timer-bottom-name' : 'timer-top-name';
+    const oppTimerEl = document.getElementById(oppTimerId);
+    if(oppTimerEl) {
+      oppTimerEl.innerHTML = oppName.toUpperCase() + ' <span class="locked-badge">LOCKED 🔒</span>';
+    }
+  } else {
+    // Show my own locked status
+    const myTimerId = isCreator ? 'timer-top-name' : 'timer-bottom-name';
+    const myTimerEl = document.getElementById(myTimerId);
+    if(myTimerEl) {
+      myTimerEl.innerHTML = myName.toUpperCase() + ' <span class="locked-badge">LOCKED 🔒</span>';
+    }
   }
 });
 
@@ -862,10 +878,10 @@ function buildResultRow(name,playerResults,colour,totalCards,faces){
 function shareResult(){
   const msg='Come play TELL with me 👀 '+location.origin;
   if(navigator.share) navigator.share({title:'TELL',text:msg,url:location.origin});
-  else{ navigator.clipboard.writeText(msg); alert('Link copied!'); }
+  else{ navigator.clipboard.writeText(msg); showToast('Link copied! 👋'); }
 }
 
-socket.on('opponent_left',()=>{ alert('Opponent disconnected. You win!'); location.href=location.origin; });
+socket.on('opponent_left',()=>{ showToast('Opponent disconnected. You win! 🏆', 4000, ()=>{ location.href=location.origin; }); });
 
 // ── POPUPS ──
 function showRoundPopup(label,callback){ boxingBell(); showPopupText(label,'clamp(48px,14vw,72px)',1800,callback); }
@@ -894,6 +910,23 @@ function showPopupText(text,fontSize,duration,callback){
   };
   popup.onclick=dismiss;
   setTimeout(dismiss,duration);
+}
+
+// ── TOAST NOTIFICATIONS ──
+function showToast(msg, duration=2500, callback=null) {
+  let toast = document.getElementById('game-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'game-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.classList.remove('show');
+    if (callback) setTimeout(callback, 300);
+  }, duration);
 }
 
 // ── SCREEN ──
