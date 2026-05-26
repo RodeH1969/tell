@@ -739,13 +739,20 @@ function onRoundResult(room) {
     // After 10s move on
     setTimeout(()=>{
       if(!isLast){
-        // Clear stale result content before showing game
+        // Clear stale result and card content
         document.getElementById('result-breakdown').innerHTML='';
         document.getElementById('result-verdict').innerHTML='';
+        document.getElementById('faces-row').innerHTML='';
+        document.getElementById('status-bar').textContent='';
         show('screen-game');
         renderScoreboard(4);
         showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{ show('screen-game'); });
       } else {
+        // Clear stale cards before game over screen loads
+        document.getElementById('faces-row').innerHTML='';
+        document.getElementById('status-bar').textContent='';
+        document.getElementById('result-breakdown').innerHTML='';
+        document.getElementById('result-verdict').innerHTML='';
         show('screen-game');
       }
     },10000);
@@ -790,7 +797,7 @@ function onGameOver(room) {
       // Show victory or defeat screen
       showEndScreen(won,draw,myScore,oppScore,myHex,oppHex);
     });
-  },12000);
+  },4000);
 }
 
 function showEndScreen(won,draw,myScore,oppScore,myHex,oppHex){
