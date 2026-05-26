@@ -59,8 +59,8 @@ function shuffle(arr) {
 function prepareGame(game) {
   const g = JSON.parse(JSON.stringify(game));
   const shuffledFaces = shuffle(g.faces);
-  const round1Faces = shuffledFaces.slice(0, 3);
-  const round2Faces = shuffledFaces.slice(3, 6);
+  const round1Faces = shuffledFaces.slice(0, 4);
+  const round2Faces = shuffledFaces.slice(4, 8);
 
   const getQuestionsForFaces = (facesSubset) => {
     let questions = facesSubset.map(face => {
@@ -225,7 +225,7 @@ async function revealQuestion(code) {
   await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
 
   setTimeout(async () => {
-    if (room.currentQuestion < 2) {
+    if (room.currentQuestion < 3) {
       setTimeout(() => startQuestion(code, room.currentRound, room.currentQuestion + 1), 2000);
     } else {
       setTimeout(() => startFinalPhase(code), 2000);
@@ -299,9 +299,9 @@ async function resolveRound(code) {
   });
 
   if (gameRound < 1) {
-    setTimeout(() => startQuestion(code, 1, 0), 18000); // 10s results + popups
+    setTimeout(() => startQuestion(code, 1, 0), 20000); // 10s results + popups
   } else {
-    setTimeout(() => endGame(code), 18000);
+    setTimeout(() => endGame(code), 20000);
   }
 }
 
@@ -316,8 +316,8 @@ async function endGame(code) {
   room.game.rounds.forEach((roundData, ri) => {
     roundData.faces.forEach(f => allFaces.push(f));
     roundData.questions.forEach((q, qi) => {
-      const globalIdx = ri * 3 + qi;
-      const offset = ri * 3;
+      const globalIdx = ri * 4 + qi;
+      const offset = ri * 4;
       const p1FinalKey = `final_${ri}_${qi}`;
       const p2FinalKey = `final_${ri}_${qi}`;
       const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[String(qi)]) ?? 0;

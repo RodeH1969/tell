@@ -205,7 +205,7 @@ function onQuestionStart(room) {
   currentQuestionIdx = questionIdx;
   pickedThisRound = false;
 
-  document.getElementById('hdr-round').textContent=`R${gameRound+1} · Q${questionIdx+1}/3`;
+  document.getElementById('hdr-round').textContent=`R${gameRound+1} · Q${questionIdx+1}/4`;
   document.getElementById('status-bar').textContent='';
 
   const faces = gameData.rounds[gameRound].faces;
@@ -214,7 +214,7 @@ function onQuestionStart(room) {
     usedFaces=new Set();
     renderCards(faces);
     setTimeout(()=>flipCardsToFace(faces),100);
-    renderScoreboard(3);
+    renderScoreboard(4);
     preloadAudio(gameData.rounds[gameRound].questions);
   }
 
@@ -317,7 +317,7 @@ function onRoundResult(room) {
   document.getElementById('result-scores').innerHTML='';
 
   const makeRoundRow=(name,playerResults,colour)=>{
-    const cards=[0,1,2].map(qi=>{
+    const cards=[0,1,2,3].map(qi=>{
       const r=playerResults[qi];
       if(!r) return '<div class="result-card-col"></div>';
       const face=(faces||[])[r.picked], correctFace=(faces||[])[r.correct];
@@ -333,7 +333,7 @@ function onRoundResult(room) {
     }).join('');
     const score=Object.values(playerResults).filter(r=>r&&r.right).length;
     return '<div class="result-player-section">'
-      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/3</h3>'
+      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/4</h3>'
       +'<div class="result-cards-row">'+cards+'</div>'
       +'</div>';
   };
@@ -351,7 +351,7 @@ function onRoundResult(room) {
       showGenericPopup(scoreText,()=>{
         if(!isLast){
           show('screen-game');
-          renderScoreboard(3);
+          renderScoreboard(4);
           showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{ show('screen-game'); });
         } else {
           show('screen-game');
@@ -394,7 +394,7 @@ function onGameOver(room) {
     }).join('');
     const score=Object.values(playerResults).filter(r=>r.right).length;
     return '<div class="result-player-section">'
-      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/6</h3>'
+      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/8</h3>'
       +'<div class="result-cards-row">'+cards+'</div>'
       +'</div>';
   };
@@ -506,7 +506,7 @@ function showLetsPlay() {
   showPopupText("Let's Play Tell!", '36px', 2000, ()=>{
     showPopupText('Each player has 15 seconds to pick which image matches the historical figure announced.', '18px', 3500, ()=>{
       if(gameData){ renderCards(gameData.rounds[0].faces); setTimeout(()=>flipCardsToFace(gameData.rounds[0].faces),100); }
-      renderScoreboard(3);
+      renderScoreboard(4);
     });
   });
 }
@@ -577,7 +577,7 @@ function startDualTimers(seconds) {
     if(!_myTimerStopped){ setTimerFill(myFillId,myPct,myCol,myPct<40); setTicks(myTicksId,Math.round(myTicks/10),myCol); if(myPct<40&&Math.round(myTicks)%10===0&&myTicks>0) beep(); }
     setTimerFill(oppFillId,oppPct,oppCol,oppPct<40);
     setTicks(oppTicksId,Math.round(oppTicks/10),oppCol);
-    if(oppTicks<=0&&!pickedThisRound){ stopDualTimers(); const avail=[0,1,2].find(i=>!usedFaces.has(`${currentGameRound}_${i}`)); submitPick(avail!==undefined?avail:0); }
+    if(oppTicks<=0&&!pickedThisRound){ stopDualTimers(); const avail=[0,1,2,3].find(i=>!usedFaces.has(`${currentGameRound}_${i}`)); submitPick(avail!==undefined?avail:0); }
   },100);
 }
 

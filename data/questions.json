@@ -8,7 +8,9 @@
       { "name": "George Washington", "front": "George Washington - front.png", "back": "George Washington - back.png" },
       { "name": "Mozart",            "front": "Mozart - front.png",            "back": "Mozart - back.png" },
       { "name": "James Cook",        "front": "James Cook - front.png",        "back": "James Cook - back.png" },
-      { "name": "Voltaire",          "front": "Voltaire - front.png",          "back": "Voltaire - back.png" }
+      { "name": "Voltaire",          "front": "Voltaire - front.png",          "back": "Voltaire - back.png" },
+      { "name": "Napoleon Bonaparte","front": "Napoleon Bonaparte - front.png","back": "Napoleon Bonaparte - back.png" },
+      { "name": "Thomas Jefferson",  "front": "Thomas Jefferson - front.png",  "back": "Thomas Jefferson - back.png" }
     ],
     "questions": [
       { "text": "Adam Smith, the economist who wrote The Wealth of Nations.", "answerIndex": 0, "audio": "Game1_Q1.mp3" },
@@ -16,7 +18,9 @@
       { "text": "George Washington, the first President of the United States.", "answerIndex": 2, "audio": "Game1_Q3.mp3" },
       { "text": "Mozart, the Austrian musical prodigy and prolific composer.", "answerIndex": 3, "audio": "Game1_Q4.mp3" },
       { "text": "James Cook, the British Royal Navy captain, navigator, and cartographer.", "answerIndex": 4, "audio": "Game1_Q5.mp3" },
-      { "text": "Voltaire, the French writer, historian, and philosopher.", "answerIndex": 5, "audio": "Game1_Q6.mp3" }
+      { "text": "Voltaire, the French writer, historian, and philosopher.", "answerIndex": 5, "audio": "Game1_Q6.mp3" },
+      { "text": "Napoleon Bonaparte, the Emperor of France.", "answerIndex": 6, "audio": "Game1_Q7.mp3" },
+      { "text": "Thomas Jefferson, an American Founding Father who served as the 2nd Vice President of the United States.", "answerIndex": 7, "audio": "Game1_Q8.mp3" }
     ]
   },
   {
@@ -28,7 +32,9 @@
       { "name": "Randy Orton",        "front": "Randy Orton - front.png",        "back": "Randy Orton - back.png" },
       { "name": "Richie McCaw",       "front": "Richie Mccaw - front.png",       "back": "Richie Mccaw - back.png" },
       { "name": "Robert Kennedy Jnr", "front": "Robert Kennedy Jnr - front.png", "back": "Robert Kennedy Jnr - back.png" },
-      { "name": "Nigel Farage",       "front": "Nigel Farage - front.png",       "back": "Nigel Farage - back.png" }
+      { "name": "Nigel Farage",       "front": "Nigel Farage - front.png",       "back": "Nigel Farage - back.png" },
+      { "name": "Tucker Carlson",     "front": "Tucker Carlson - front.png",     "back": "Tucker Carlson - back.png" },
+      { "name": "Connor McGregor",    "front": "Connor McGregor - front.png",    "back": "Connor McGregor - back.png" }
     ],
     "questions": [
       { "text": "Ben Shapiro, the American conservative political commentator and media host.", "answerIndex": 0, "audio": "Game2_Q1.mp3" },
@@ -36,7 +42,9 @@
       { "text": "Randy Orton, the highly decorated American professional wrestler and actor.", "answerIndex": 2, "audio": "Game2_Q3.mp3" },
       { "text": "Richie McCaw, the legendary New Zealand rugby union player who captained the All Blacks.", "answerIndex": 3, "audio": "Game2_Q4.mp3" },
       { "text": "Robert Kennedy Jnr, the political figure who is the nephew of former U.S. President John F. Kennedy.", "answerIndex": 4, "audio": "Game2_Q5.mp3" },
-      { "text": "Nigel Farage, the British politician who has been Leader of Reform UK since 2024.", "answerIndex": 5, "audio": "Game2_Q6.mp3" }
+      { "text": "Nigel Farage, the British politician who has been Leader of Reform UK since 2024.", "answerIndex": 5, "audio": "Game2_Q6.mp3" },
+      { "text": "Tucker Carlson, the American conservative political commentator who hosts The Tucker Carlson Show.", "answerIndex": 6, "audio": "Game2_Q7.mp3" },
+      { "text": "Conor McGregor, the Irish professional mixed martial artist.", "answerIndex": 7, "audio": "Game2_Q8.mp3" }
     ]
   },
   {
@@ -48,7 +56,9 @@
       { "name": "Bobby Charlton","front": "Bobby Charlton - front.png","back": "Bobby Charlton - back.png" },
       { "name": "Pierre Trudeau","front": "Pierre Trudeau - front.png","back": "Pierre Trudeau - back.png" },
       { "name": "Richard Burton","front": "Richard Burton - front.png","back": "Richard Burton - back.png" },
-      { "name": "Marlon Brando", "front": "Marlon Brando - front.png", "back": "Marlon Brando - back.png" }
+      { "name": "Marlon Brando", "front": "Marlon Brando - front.png", "back": "Marlon Brando - back.png" },
+      { "name": "Paul Newman",   "front": "Paul Newman - front.png",   "back": "Paul Newman - back.png" },
+      { "name": "Pele",          "front": "Pele - front.png",          "back": "Pele - back.png" }
     ],
     "questions": [
       { "text": "John Newcombe, the Australian former World No. 1 tennis champion.", "answerIndex": 0, "audio": "Game3_Q1.mp3" },
@@ -56,19 +66,23 @@
       { "text": "Bobby Charlton, the English football legend and 1966 World Cup winner.", "answerIndex": 2, "audio": "Game3_Q3.mp3" },
       { "text": "Pierre Trudeau, the charismatic 15th Prime Minister of Canada.", "answerIndex": 3, "audio": "Game3_Q4.mp3" },
       { "text": "Richard Burton, the acclaimed Welsh actor who married Elizabeth Taylor.", "answerIndex": 4, "audio": "Game3_Q5.mp3" },
-      { "text": "Marlon Brando, the American actor regarded as one of the greatest performers in cinema.", "answerIndex": 5, "audio": "Game3_Q6.mp3" }
+      { "text": "Marlon Brando, the American actor regarded as one of the greatest performers in cinema.", "answerIndex": 5, "audio": "Game3_Q6.mp3" },
+      { "text": "Paul Newman, the American actor, filmmaker and racing car driver.", "answerIndex": 6, "audio": "Game3_Q7.mp3" },
+      { "text": "Pelé, the Brazilian professional footballer.", "answerIndex": 7, "audio": "Game3_Q8.mp3" }
     ]
   },
   {
     "gameId": "Game4",
     "title": "Icons of the 20th Century",
     "faces": [
-      { "name": "Charlie Chaplin",  "front": "Charlie Chaplin - front.png",  "back": "Charlie Chaplin - back.png" },
-      { "name": "Edmund Hillary",   "front": "Edmund Hilary - front.png",    "back": "Edmund Hilary - back.png" },
-      { "name": "Keith Miller",     "front": "Keith Miller - front.png",     "back": "Keith Miller - back.png" },
-      { "name": "Liberace",         "front": "Liberace - front.png",         "back": "Liberace - back.png" },
-      { "name": "Michael Caine",    "front": "Micahel Caine - front.png",    "back": "Micahel Caine - back.png" },
-      { "name": "Laurence Olivier", "front": "Laurence Olivier - front.png", "back": "Laurence Olivier - back.png" }
+      { "name": "Charlie Chaplin",  "front": "Charlie Chaplin - front.png",   "back": "Charlie Chaplin - back.png" },
+      { "name": "Edmund Hillary",   "front": "Edmund Hilary - front.png",     "back": "Edmund Hilary - back.png" },
+      { "name": "Keith Miller",     "front": "Keith Miller - front.png",      "back": "Keith Miller - back.png" },
+      { "name": "Liberace",         "front": "Liberace - front.png",          "back": "Liberace - back.png" },
+      { "name": "Michael Caine",    "front": "Micahel Caine - front.png",     "back": "Micahel Caine - back.png" },
+      { "name": "Laurence Olivier", "front": "Laurence Olivier - front.png",  "back": "Laurence Olivier - back.png" },
+      { "name": "Bing Crosby",      "front": "Bing Crosby - front.png",       "back": "Bing Crosby - back.png" },
+      { "name": "Humphrey Bogart",  "front": "Humphrey Bogart - front.png",   "back": "Humphrey Bogart - back.png" }
     ],
     "questions": [
       { "text": "Charlie Chaplin, the English comic actor, filmmaker, and composer.", "answerIndex": 0, "audio": "Game4_Q1.mp3" },
@@ -76,7 +90,9 @@
       { "text": "Keith Miller, the Australian Test cricketer and World War II fighter pilot.", "answerIndex": 2, "audio": "Game4_Q3.mp3" },
       { "text": "Liberace, the flamboyant and virtuosic American pianist and entertainer.", "answerIndex": 3, "audio": "Game4_Q4.mp3" },
       { "text": "Michael Caine, the Academy Award-winning English actor renowned for his Cockney accent.", "answerIndex": 4, "audio": "Game4_Q5.mp3" },
-      { "text": "Laurence Olivier, the legendary English actor and director.", "answerIndex": 5, "audio": "Game4_Q6.mp3" }
+      { "text": "Laurence Olivier, the legendary English actor and director.", "answerIndex": 5, "audio": "Game4_Q6.mp3" },
+      { "text": "Bing Crosby, the American singer and actor.", "answerIndex": 6, "audio": "Game4_Q7.mp3" },
+      { "text": "Humphrey Bogart, the American actor and cultural icon.", "answerIndex": 7, "audio": "Game4_Q8.mp3" }
     ]
   },
   {
@@ -88,7 +104,9 @@
       { "name": "Mark Twain",       "front": "Mark Twain - front.png",       "back": "Mark Twain - back.png" },
       { "name": "JD Salinger",      "front": "JD Salinger - front.png",      "back": "JD Salinger - back.png" },
       { "name": "Winston Churchill","front": "Winston Churchill - front.png", "back": "Winston Churchill - back.png" },
-      { "name": "Henry Ford",       "front": "Henry Ford - front.png",       "back": "Henry Ford - back.png" }
+      { "name": "Henry Ford",       "front": "Henry Ford - front.png",       "back": "Henry Ford - back.png" },
+      { "name": "Ernest Hemingway", "front": "Ernest Hemingway - front.png", "back": "Ernest Hemingway - back.png" },
+      { "name": "George Orwell",    "front": "George Orwell - front.png",    "back": "George Orwell - back.png" }
     ],
     "questions": [
       { "text": "Sigmund Freud, the Austrian neurologist who founded psychoanalysis.", "answerIndex": 0, "audio": "Game5_Q1.mp3" },
@@ -96,7 +114,9 @@
       { "text": "Mark Twain, the author of The Adventures of Tom Sawyer and Huckleberry Finn.", "answerIndex": 2, "audio": "Game5_Q3.mp3" },
       { "text": "JD Salinger, the reclusive American author best known for The Catcher in the Rye.", "answerIndex": 3, "audio": "Game5_Q4.mp3" },
       { "text": "Winston Churchill, the two-time British Prime Minister.", "answerIndex": 4, "audio": "Game5_Q5.mp3" },
-      { "text": "Henry Ford, the American industrialist and business magnate.", "answerIndex": 5, "audio": "Game5_Q6.mp3" }
+      { "text": "Henry Ford, the American industrialist and business magnate.", "answerIndex": 5, "audio": "Game5_Q6.mp3" },
+      { "text": "Ernest Hemingway, the American novelist, short-story writer, and journalist.", "answerIndex": 6, "audio": "Game5_Q7.mp3" },
+      { "text": "George Orwell, the English novelist, essayist, journalist, and critic.", "answerIndex": 7, "audio": "Game5_Q8.mp3" }
     ]
   }
 ]
