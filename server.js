@@ -187,7 +187,6 @@ io.on('connection', (socket) => {
     const player = players.find(p => p.name === name);
     if (player) {
       if (!player.picks) player.picks = {};
-      // Store final picks with round prefix e.g. final_0_0, final_0_1
       const round = room.currentRound;
       Object.keys(picks).forEach(qi => {
         player.picks[`final_${round}_${qi}`] = picks[qi];
@@ -197,9 +196,15 @@ io.on('connection', (socket) => {
       player.changes[room.currentRound] = changes || 0;
     }
 
-    await db.ref(`rooms/${code}`).update({ players });
+    // Write who has locked in so both clients can show waiting state
+    const lockedIn = players.filter(p => p.finalSubmitted).map(p => p.name);
+    await db.ref(`rooms/${code}`).update({ players, lockedIn });
 
-    if (players.every(p => p.finalSubmitted)) resolveRound(code);
+    if (players.every(p => p.finalSubmitted)) {
+      // Both locked — resolve
+      await db.ref(`rooms/${code}`).update({ lockedIn: [] });
+      resolveRound(code);
+    }
   });
 });
 
@@ -318,10 +323,16 @@ async function endGame(code) {
     roundData.questions.forEach((q, qi) => {
       const globalIdx = ri * 4 + qi;
       const offset = ri * 4;
+      // Always use final picks (prefixed) — they are the authoritative answer after Final Chance
       const p1FinalKey = `final_${ri}_${qi}`;
       const p2FinalKey = `final_${ri}_${qi}`;
-      const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[String(qi)]) ?? 0;
-      const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[String(qi)]) ?? 0;
+      // Fall back to round-prefixed initial picks, then bare index
+      const p1Pick = (p1.picks || {})[p1FinalKey]
+                  ?? (p1.picks || {})[`${ri}_${qi}`]
+                  ?? 0;
+      const p2Pick = (p2.picks || {})[p2FinalKey]
+                  ?? (p2.picks || {})[`${ri}_${qi}`]
+                  ?? 0;
       allResults[p1.name][globalIdx] = { picked: p1Pick + offset, correct: q.answerIndex + offset, right: p1Pick === q.answerIndex };
       allResults[p2.name][globalIdx] = { picked: p2Pick + offset, correct: q.answerIndex + offset, right: p2Pick === q.answerIndex };
     });
