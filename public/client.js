@@ -631,19 +631,21 @@ function revealScoreboardSlot(questionIdx, picks, gameRound) {
   if(centre){ centre.innerHTML=`<span class="sb-centre-name">${faces[q.answerIndex].name}</span>`; centre.classList.add('slot-drop'); }
   const redPicks=myColour==='red'?picks[myName]:picks[oppName];
   const bluePicks=myColour==='red'?picks[oppName]:picks[myName];
-  updateScoreSlot('sb-slots-left', questionIdx, redPicks, q.answerIndex, faces);
-  updateScoreSlot('sb-slots-right', questionIdx, bluePicks, q.answerIndex, faces);
+  updateScoreSlot('sb-slots-left', questionIdx, redPicks, q.answerIndex, faces, 0);
+  updateScoreSlot('sb-slots-right', questionIdx, bluePicks, q.answerIndex, faces, 60);
 }
 
-function updateScoreSlot(containerId, questionIdx, playerPicks, correctIdx, faces) {
+function updateScoreSlot(containerId, questionIdx, playerPicks, correctIdx, faces, delay=0) {
   const slot=document.getElementById(`${containerId}-q${questionIdx}`);
   if(!slot||!playerPicks||playerPicks[questionIdx]===undefined) return;
   const face=faces[playerPicks[questionIdx]];
   const correct=playerPicks[questionIdx]===correctIdx;
   const thumb=slot.querySelector('.sb-slot-thumb');
-  thumb.innerHTML=`<img src="${cardImg(face)}" alt="${face.name}">`;
-  thumb.classList.add(correct?'correct':'wrong');
-  slot.classList.add('slot-drop');
+  setTimeout(()=>{
+    thumb.innerHTML=`<img src="${cardImg(face)}" alt="${face.name}">`;
+    thumb.classList.add(correct?'correct':'wrong');
+    slot.classList.add('slot-drop');
+  }, delay);
 }
 
 function highlightActiveSlot(idx) {
@@ -734,17 +736,30 @@ function showRoundPopup(label,callback){ boxingBell(); showPopupText(label,'44px
 function showGenericPopup(text,callback){ showPopupText(text,'26px',3500,callback); }
 function showPopupText(text,fontSize,duration,callback){
   const popup=document.getElementById('popup-letsplay');
+  const inner=popup.querySelector('.popup-inner');
   const textEl=popup.querySelector('.popup-text');
   const img=popup.querySelector('img');
-  img.style.display='none'; textEl.textContent=text; textEl.style.fontSize=fontSize;
-  textEl.style.whiteSpace='pre-line'; textEl.style.textAlign='center';
+
+  img.style.display='none';
+  textEl.textContent=text;
+  textEl.style.fontSize=fontSize;
+  textEl.style.whiteSpace='pre-line';
+  textEl.style.textAlign='center';
+
+  // Step 1: backdrop fades in
   popup.classList.add('show');
+  // Step 2: panel eases in 40ms later for choreographed feel
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{ inner.style.transitionDelay='40ms'; });
+  });
+
   let dismissed=false;
   const dismiss=()=>{
     if(dismissed) return; dismissed=true; popup.onclick=null;
+    inner.style.transitionDelay='0ms';
     popup.classList.remove('show');
     img.style.display=''; textEl.style.fontSize=''; textEl.style.whiteSpace='';
-    setTimeout(()=>{ playPendingAudio(); if(callback) callback(); },300);
+    setTimeout(()=>{ playPendingAudio(); if(callback) callback(); },220);
   };
   popup.onclick=dismiss;
   setTimeout(dismiss,duration);
