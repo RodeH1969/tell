@@ -161,6 +161,8 @@ function handleRoomState(room) {
       break;
     case 'final':
       if(phase !== _lastPhase) onFinalPhase(room);
+      // Update locked-in status even if phase hasn't changed
+      else if(room.lockedIn) updateLockedIn(room.lockedIn);
       break;
     case 'round_result':
       if(phase !== _lastPhase) onRoundResult(room);
@@ -292,6 +294,37 @@ function onFinalPhase(room) {
   });
 }
 
+// ── SHARED RESULT ROW BUILDER ──
+function buildResultRow(name, playerResults, colour, totalCards, faces) {
+  const score = Object.values(playerResults).filter(r=>r&&r.right).length;
+  const bgColour = colour === '#e53e3e' ? 'rgba(229,62,62,0.06)' : 'rgba(49,130,206,0.06)';
+  const borderColour = colour === '#e53e3e' ? 'rgba(229,62,62,0.2)' : 'rgba(49,130,206,0.2)';
+
+  const cards = Array.from({length:totalCards}, (_,qi) => {
+    const r = playerResults[qi];
+    if(!r) return '<div class="result-card-col"></div>';
+    const face = (faces||[])[r.picked];
+    const correctFace = (faces||[])[r.correct];
+    if(!face) return '';
+    return `<div class="result-card-col">
+      <div class="result-card-img ${r.right?'correct':'wrong'}">
+        <img src="${cardImg(face)}" alt="${face.name}">
+        <div class="result-card-icon">${r.right?'✓':'✗'}</div>
+      </div>
+      <div class="result-card-name ${r.right?'name-correct':'name-wrong'}">${face.name}</div>
+      ${!r.right && correctFace ? `<div class="result-card-answer">✓ ${correctFace.name}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  return `<div class="result-player-section" style="background:${bgColour};border-color:${borderColour}">
+    <div class="result-player-name" style="color:${colour}">
+      <span>${name.toUpperCase()}</span>
+      <span class="result-score-badge" style="background:${colour}">${score}/${totalCards}</span>
+    </div>
+    <div class="result-cards-row">${cards}</div>
+  </div>`;
+}
+
 // ── ROUND RESULT ──
 function onRoundResult(room) {
   stopDualTimers();
@@ -311,35 +344,12 @@ function onRoundResult(room) {
   document.getElementById('hdr-opp-score').textContent=oppTotal;
 
   show('screen-result');
-  const v=document.getElementById('result-verdict');
-  v.textContent='ROUND '+(gameRound+1)+' RESULTS';
-  v.className=''; v.style.cssText='font-size:20px;color:var(--teal);margin-bottom:8px;letter-spacing:0.1em;';
+  document.getElementById('result-verdict').innerHTML='';
   document.getElementById('result-scores').innerHTML='';
-
-  const makeRoundRow=(name,playerResults,colour)=>{
-    const cards=[0,1,2,3].map(qi=>{
-      const r=playerResults[qi];
-      if(!r) return '<div class="result-card-col"></div>';
-      const face=(faces||[])[r.picked], correctFace=(faces||[])[r.correct];
-      if(!face) return '';
-      return '<div class="result-card-col">'
-        +'<div class="result-card-img '+(r.right?'correct':'wrong')+'">'
-        +'<img src="'+cardImg(face)+'" alt="'+face.name+'">'
-        +'<div class="result-card-icon">'+(r.right?'✓':'✗')+'</div>'
-        +'</div>'
-        +'<div class="result-card-name '+(r.right?'name-correct':'name-wrong')+'">'+face.name+'</div>'
-        +(!r.right&&correctFace?'<div class="result-card-answer">✓ '+correctFace.name+'</div>':'')
-        +'</div>';
-    }).join('');
-    const score=Object.values(playerResults).filter(r=>r&&r.right).length;
-    return '<div class="result-player-section">'
-      +'<h3 class="result-player-name" style="color:'+colour+'">'+name.toUpperCase()+' — '+score+'/4</h3>'
-      +'<div class="result-cards-row">'+cards+'</div>'
-      +'</div>';
-  };
-
   document.getElementById('result-breakdown').innerHTML=
-    makeRoundRow(myName,myResults,myHex)+makeRoundRow(oppName,oppResults,oppHex);
+    `<h2 class="result-screen-heading round-result">ROUND ${gameRound+1} RESULTS</h2>`+
+    buildResultRow(myName, myResults, myHex, 4, faces)+
+    buildResultRow(oppName, oppResults, oppHex, 4, faces);
 
   setTimeout(()=>{
     const bluffText=myName.toUpperCase()+' made '+myC+' change'+(myC!==1?'s':'')+'.\n'
@@ -446,10 +456,41 @@ function submitPick(faceIndex) {
 
 function submitFinal() {
   if(_finalSubmitted) return;
-  _finalSubmitted=true; stopDualTimers();
-  document.getElementById('status-bar').textContent='LOCKED IN — WAITING FOR OPPONENT…';
+  _finalSubmitted=true;
+  stopDualTimers();
+
+  // Change button to locked state
+  const btn=document.querySelector('#screen-final .btn-primary');
+  if(btn){ btn.textContent='✓ LOCKED IN'; btn.style.background='var(--green)'; btn.disabled=true; }
+
+  // Show dramatic waiting message
+  document.getElementById('status-bar').textContent='';
+  showWaitingForOpponent();
+
   socket.emit('submit_final', {code:roomCode, name:myName, picks:finalPicks, changes:_finalChanges});
   _finalChanges=0;
+}
+
+function showWaitingForOpponent() {
+  const bar=document.getElementById('status-bar');
+  if(!bar) return;
+  bar.innerHTML='<span class="waiting-opponent">LOCKED IN — WAITING FOR OPPONENT</span>';
+  // Pulse dots
+  let dots=0;
+  const interval=setInterval(()=>{
+    if(!_finalSubmitted){ clearInterval(interval); return; }
+    dots=(dots+1)%4;
+    bar.innerHTML='<span class="waiting-opponent">LOCKED IN — WAITING FOR OPPONENT'+''.padEnd(dots,'.')+'</span>';
+  },500);
+}
+
+function updateLockedIn(lockedIn) {
+  if(!lockedIn||!lockedIn.length) return;
+  const oppLocked = lockedIn.includes(oppName) && !lockedIn.includes(myName);
+  if(oppLocked && !_finalSubmitted) {
+    // Opponent locked but I haven't — show pressure message
+    document.getElementById('status-bar').innerHTML='<span style="color:var(--gold);font-weight:800;letter-spacing:0.1em;animation:namePulse 0.5s ease-in-out infinite">⚡ OPPONENT LOCKED IN — YOUR MOVE!</span>';
+  }
 }
 
 function shareResult() {
@@ -732,8 +773,16 @@ function boxingBell(){ try{const ctx=getAudioCtx(),t=ctx.currentTime;ringBell(ct
 function ringBell(ctx,st){ [440,880,1320,2200].forEach((freq,i)=>{ const osc=ctx.createOscillator(),gain=ctx.createGain(); osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq; const vol=[0.4,0.3,0.15,0.08][i]; gain.gain.setValueAtTime(vol,st);gain.gain.exponentialRampToValueAtTime(0.001,st+1.8); osc.start(st);osc.stop(st+1.8); }); }
 
 // ── POPUPS ──
-function showRoundPopup(label,callback){ boxingBell(); showPopupText(label,'44px',1800,callback); }
-function showGenericPopup(text,callback){ showPopupText(text,'26px',3500,callback); }
+function showRoundPopup(label,callback){ boxingBell(); showPopupText(label,'clamp(48px,14vw,72px)',1800,callback); }
+function showGenericPopup(text,callback){
+  // Scale text based on length — short = huge, long = readable
+  const len=text.length;
+  const size = len < 20  ? 'clamp(44px,12vw,68px)'
+             : len < 50  ? 'clamp(32px,9vw,52px)'
+             : len < 100 ? 'clamp(24px,6vw,38px)'
+             :              'clamp(18px,5vw,28px)';
+  showPopupText(text, size, 3500, callback);
+}
 function showPopupText(text,fontSize,duration,callback){
   const popup=document.getElementById('popup-letsplay');
   const inner=popup.querySelector('.popup-inner');
