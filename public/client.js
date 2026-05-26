@@ -713,12 +713,19 @@ function onRoundResult(room) {
       buildResultRow(myName,myResults,myHex,4,faces)+
       buildResultRow(oppName,oppResults,oppHex,4,faces);
 
+    // Hide share button during round results
+    const shareBtn=document.querySelector('.share-btn');
+    if(shareBtn) shareBtn.style.display='none';
+
     // Slow card-by-card reveal with sounds
     revealResultCardsAnimated('.result-player-section',4);
 
     // After 10s move on
     setTimeout(()=>{
       if(!isLast){
+        // Clear stale result content before showing game
+        document.getElementById('result-breakdown').innerHTML='';
+        document.getElementById('result-verdict').innerHTML='';
         show('screen-game');
         renderScoreboard(4);
         showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{ show('screen-game'); });
