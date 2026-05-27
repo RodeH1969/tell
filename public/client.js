@@ -155,6 +155,7 @@ window.addEventListener('load', () => {
 
 // ── CREATE ──
 function createGame() {
+  unlockAudio();
   startMusic();
   myName='APOLLO CREED';
   isCreator=true; myColour='red';
@@ -167,6 +168,7 @@ socket.on('room_created',({code})=>{
 
 // ── JOIN ──
 function joinGame() {
+  unlockAudio();
   startMusic();
   myName='ROCKY BALBOA';
   if(!_codeFromUrl) return;
