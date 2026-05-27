@@ -37,7 +37,7 @@
   <p class="splash-tag">Famous once. Forgotten never.</p>
 </div>
 
-<!-- CREATOR — APOLLO CREED -->
+<!-- CREATOR — THE CHAMP -->
 <div id="screen-creator" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <div class="boxer-reveal">
@@ -45,7 +45,7 @@
     <div class="vs-badge">VS</div>
     <img class="glove glove-blue" src="/blueglove.png" alt="Blue Glove">
   </div>
-  <div class="fighter-name fighter-red">APOLLO CREED</div>
+  <div class="fighter-name fighter-red">THE CHAMP</div>
   <div class="fighter-tagline">throws down the challenge</div>
   <button id="btn-challenge" class="btn-primary btn-fight" onclick="createGame()">SEND CHALLENGE →</button>
 </div>
@@ -53,22 +53,22 @@
 <!-- WAITING -->
 <div id="screen-waiting" class="screen">
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
-  <div class="fighter-name fighter-red" style="margin-bottom:8px">APOLLO CREED</div>
+  <div class="fighter-name fighter-red" style="margin-bottom:8px">THE CHAMP</div>
   <button class="btn-primary share-invite-btn" onclick="shareInvite()">SEND CHALLENGE →</button>
   <div id="waiting-status" class="hidden">
     <p class="waiting-label">CHALLENGE SENT</p>
-    <p class="waiting-sub">Waiting for Rocky Balboa...</p>
+    <p class="waiting-sub">Waiting for The Challenger...</p>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
-<!-- JOINER — ROCKY BALBOA -->
+<!-- JOINER — THE CHALLENGER -->
 <div id="screen-joiner" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
   <div class="challenger-announce">
-    <div class="fighter-name fighter-red" style="font-size:clamp(22px,6vw,36px)">APOLLO CREED</div>
+    <div class="fighter-name fighter-red" style="font-size:clamp(22px,6vw,36px)">THE CHAMP</div>
     <div class="challenge-text">has thrown down<br>the challenge to</div>
-    <div class="fighter-name fighter-blue" style="font-size:clamp(28px,8vw,48px)">ROCKY BALBOA</div>
+    <div class="fighter-name fighter-blue" style="font-size:clamp(28px,8vw,48px)">THE CHALLENGER</div>
   </div>
   <div class="boxer-reveal" style="margin:12px 0">
     <img class="glove glove-red" src="/redglove.png" alt="Red Glove">
@@ -86,36 +86,36 @@
 <!-- GAME -->
 <div id="screen-game" class="screen">
   <div class="dual-timer" id="timer-top">
-    <span class="timer-name" id="timer-top-name">APOLLO</span>
+    <span class="timer-name" id="timer-top-name">THE CHAMP</span>
     <div class="timer-track"><div class="timer-fill" id="timer-top-fill"></div></div>
     <div class="timer-ticks" id="timer-top-ticks"></div>
   </div>
   <div id="game-header">
     <div class="score-block">
-      <span class="score-name" id="hdr-my-name">APOLLO</span>
+      <span class="score-name" id="hdr-my-name">THE CHAMP</span>
       <span class="score-num" id="hdr-my-score">0</span>
     </div>
     <div class="round-badge" id="hdr-round">R1 · Q1/4</div>
     <div class="score-block right">
-      <span class="score-name" id="hdr-opp-name">ROCKY</span>
+      <span class="score-name" id="hdr-opp-name">THE CHALLENGER</span>
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
   <button id="audio-play-btn" style="display:none">🔊 TAP TO HEAR QUESTION</button>
   <div id="faces-row"></div>
   <div class="dual-timer" id="timer-bottom">
-    <span class="timer-name" id="timer-bottom-name">ROCKY</span>
+    <span class="timer-name" id="timer-bottom-name">THE CHALLENGER</span>
     <div class="timer-track"><div class="timer-fill" id="timer-bottom-fill"></div></div>
     <div class="timer-ticks" id="timer-bottom-ticks"></div>
   </div>
   <div id="scoreboard">
     <div class="sb-panel sb-left" id="sb-left">
-      <div class="sb-player-name" id="sb-left-name">APOLLO</div>
+      <div class="sb-player-name" id="sb-left-name">THE CHAMP</div>
       <div class="sb-slots" id="sb-slots-left"></div>
     </div>
     <div class="sb-centre" id="sb-centre"></div>
     <div class="sb-panel sb-right" id="sb-right">
-      <div class="sb-player-name" id="sb-right-name">ROCKY</div>
+      <div class="sb-player-name" id="sb-right-name">THE CHALLENGER</div>
       <div class="sb-slots" id="sb-slots-right"></div>
     </div>
   </div>
