@@ -772,7 +772,6 @@ function onGameOver(room) {
   const oppHex=myColour==='red'?'#3182ce':'#e53e3e';
 
   show('screen-result');
-  // Show share button on final screen
   const shareBtn2 = document.querySelector('.share-btn');
   if(shareBtn2) shareBtn2.style.display = '';
   document.getElementById('result-verdict').innerHTML='';

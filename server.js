@@ -168,8 +168,15 @@ io.on('connection', (socket) => {
     // Broadcast pick to all clients in real-time
     io.to(code).emit('pick_made', { submitterName: name, faceIndex });
 
+    // Firebase transaction — only one submit_pick triggers reveal
     if (Object.keys(roundPicks).length >= 2) {
-      revealQuestion(code);
+      const phaseRef = db.ref(`rooms/${code}/phase`);
+      phaseRef.transaction(currentPhase => {
+        if (currentPhase === 'picking') return 'revealing';
+        return undefined; // abort — already handled
+      }, (error, committed) => {
+        if (!error && committed) revealQuestion(code);
+      });
     }
   });
 
@@ -226,7 +233,7 @@ async function startQuestion(code, gameRound, questionIdx) {
 async function revealQuestion(code) {
   const room = await getRoom(code);
   if (!room) return;
-  await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
+  // Phase already set to 'revealing' by transaction — clients react via Firebase listener
   setTimeout(async () => {
     if (room.currentQuestion < 3) {
       setTimeout(() => startQuestion(code, room.currentRound, room.currentQuestion + 1), 2000);
