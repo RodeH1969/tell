@@ -37,87 +37,138 @@
   <p class="splash-tag">Famous once. Forgotten never.</p>
 </div>
 
-<!-- CREATOR -->
+<!-- CREATOR — APOLLO CREED -->
 <div id="screen-creator" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
-  <label class="field-label">YOUR NAME</label>
-  <input id="input-creator-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
-  <button id="btn-challenge" class="btn-primary" onclick="createGame()" disabled>CHALLENGE A FRIEND</button>
+  <div class="boxer-reveal">
+    <svg class="glove glove-red" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="#c0392b"/>
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="url(#redShine)"/>
+      <rect x="25" y="40" width="70" height="35" rx="12" fill="#e74c3c"/>
+      <rect x="30" y="30" width="20" height="20" rx="8" fill="#e74c3c"/>
+      <rect x="55" y="28" width="18" height="18" rx="7" fill="#e74c3c"/>
+      <rect x="77" y="32" width="16" height="16" rx="7" fill="#e74c3c"/>
+      <rect x="20" y="130" width="80" height="20" rx="8" fill="#922b21"/>
+      <rect x="25" y="133" width="70" height="3" rx="2" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="redShine" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0.1"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="vs-badge">VS</div>
+    <svg class="glove glove-blue" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="#1a5276"/>
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="url(#blueShine)"/>
+      <rect x="15" y="40" width="70" height="35" rx="12" fill="#2471a3"/>
+      <rect x="70" y="30" width="20" height="20" rx="8" fill="#2471a3"/>
+      <rect x="47" y="28" width="18" height="18" rx="7" fill="#2471a3"/>
+      <rect x="25" y="32" width="16" height="16" rx="7" fill="#2471a3"/>
+      <rect x="20" y="130" width="80" height="20" rx="8" fill="#1a3a5c"/>
+      <rect x="25" y="133" width="70" height="3" rx="2" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="blueShine" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0.1"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="fighter-name fighter-red">APOLLO CREED</div>
+  <div class="fighter-tagline">throws down the challenge</div>
+  <button id="btn-challenge" class="btn-primary btn-fight" onclick="createGame()">SEND CHALLENGE →</button>
 </div>
 
 <!-- WAITING -->
 <div id="screen-waiting" class="screen">
   <img src="logo.jpeg" alt="TELL" class="waiting-logo">
+  <div class="fighter-name fighter-red" style="margin-bottom:8px">APOLLO CREED</div>
   <button class="btn-primary share-invite-btn" onclick="shareInvite()">SEND CHALLENGE →</button>
   <div id="waiting-status" class="hidden">
     <p class="waiting-label">CHALLENGE SENT</p>
-    <p class="waiting-sub">Waiting for your opponent to join…</p>
+    <p class="waiting-sub">Waiting for Rocky Balboa...</p>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
-<!-- JOINER -->
+<!-- JOINER — ROCKY BALBOA -->
 <div id="screen-joiner" class="screen">
   <img src="logo.jpeg" alt="TELL" class="lobby-logo">
-  <p class="join-challenge-msg">You've been challenged!</p>
+  <div class="challenger-announce">
+    <div class="fighter-name fighter-red" style="font-size:clamp(22px,6vw,36px)">APOLLO CREED</div>
+    <div class="challenge-text">has thrown down<br>the challenge to</div>
+    <div class="fighter-name fighter-blue" style="font-size:clamp(28px,8vw,48px)">ROCKY BALBOA</div>
+  </div>
+  <div class="boxer-reveal" style="margin:12px 0">
+    <svg class="glove glove-red" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="#c0392b"/>
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="url(#redShine2)"/>
+      <rect x="25" y="40" width="70" height="35" rx="12" fill="#e74c3c"/>
+      <rect x="30" y="30" width="20" height="20" rx="8" fill="#e74c3c"/>
+      <rect x="55" y="28" width="18" height="18" rx="7" fill="#e74c3c"/>
+      <rect x="77" y="32" width="16" height="16" rx="7" fill="#e74c3c"/>
+      <rect x="20" y="130" width="80" height="20" rx="8" fill="#922b21"/>
+      <rect x="25" y="133" width="70" height="3" rx="2" fill="#fff" opacity="0.3"/>
+      <defs><linearGradient id="redShine2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity="0.15"/><stop offset="100%" stop-color="#000" stop-opacity="0.1"/></linearGradient></defs>
+    </svg>
+    <div class="vs-badge">VS</div>
+    <svg class="glove glove-blue" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="#1a5276"/>
+      <rect x="15" y="60" width="90" height="85" rx="20" fill="url(#blueShine2)"/>
+      <rect x="15" y="40" width="70" height="35" rx="12" fill="#2471a3"/>
+      <rect x="70" y="30" width="20" height="20" rx="8" fill="#2471a3"/>
+      <rect x="47" y="28" width="18" height="18" rx="7" fill="#2471a3"/>
+      <rect x="25" y="32" width="16" height="16" rx="7" fill="#2471a3"/>
+      <rect x="20" y="130" width="80" height="20" rx="8" fill="#1a3a5c"/>
+      <rect x="25" y="133" width="70" height="3" rx="2" fill="#fff" opacity="0.3"/>
+      <defs><linearGradient id="blueShine2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity="0.15"/><stop offset="100%" stop-color="#000" stop-opacity="0.1"/></linearGradient></defs>
+    </svg>
+  </div>
   <div id="rules-box">
     <p class="rules-title">HOW TO PLAY</p>
     <p class="rules-text">You'll see 4 mystery faces. A historical figure is announced — pick which face matches. Two rounds of 4. You get 2 swaps a round. Most correct wins.</p>
   </div>
-  <label class="field-label">YOUR NAME</label>
-  <input id="input-joiner-name" class="name-input pulsing" type="text" maxlength="16" placeholder="Enter your name" autocomplete="off">
-  <button id="btn-join" class="btn-primary" onclick="joinGame()" disabled>JOIN NOW</button>
+  <button id="btn-join" class="btn-primary btn-fight btn-fight-blue" onclick="joinGame()">ACCEPT THE CHALLENGE →</button>
   <p id="join-error-msg" class="join-error hidden"></p>
 </div>
 
 <!-- GAME -->
 <div id="screen-game" class="screen">
-
-  <!-- TOP TIMER (creator) -->
   <div class="dual-timer" id="timer-top">
-    <span class="timer-name" id="timer-top-name">PLAYER 1</span>
+    <span class="timer-name" id="timer-top-name">APOLLO</span>
     <div class="timer-track"><div class="timer-fill" id="timer-top-fill"></div></div>
     <div class="timer-ticks" id="timer-top-ticks"></div>
   </div>
-
-  <!-- HEADER -->
   <div id="game-header">
     <div class="score-block">
-      <span class="score-name" id="hdr-my-name">YOU</span>
+      <span class="score-name" id="hdr-my-name">APOLLO</span>
       <span class="score-num" id="hdr-my-score">0</span>
     </div>
-    <div class="round-badge" id="hdr-round">R1 · Q1/3</div>
+    <div class="round-badge" id="hdr-round">R1 · Q1/4</div>
     <div class="score-block right">
-      <span class="score-name" id="hdr-opp-name">OPP</span>
+      <span class="score-name" id="hdr-opp-name">ROCKY</span>
       <span class="score-num" id="hdr-opp-score">0</span>
     </div>
   </div>
-
   <button id="audio-play-btn" style="display:none">🔊 TAP TO HEAR QUESTION</button>
-
-  <!-- 3 FACE CARDS -->
   <div id="faces-row"></div>
-
-  <!-- BOTTOM TIMER (joiner) -->
   <div class="dual-timer" id="timer-bottom">
-    <span class="timer-name" id="timer-bottom-name">PLAYER 2</span>
+    <span class="timer-name" id="timer-bottom-name">ROCKY</span>
     <div class="timer-track"><div class="timer-fill" id="timer-bottom-fill"></div></div>
     <div class="timer-ticks" id="timer-bottom-ticks"></div>
   </div>
-
-  <!-- SCOREBOARD STRIP -->
   <div id="scoreboard">
     <div class="sb-panel sb-left" id="sb-left">
-      <div class="sb-player-name" id="sb-left-name">RED</div>
+      <div class="sb-player-name" id="sb-left-name">APOLLO</div>
       <div class="sb-slots" id="sb-slots-left"></div>
     </div>
     <div class="sb-centre" id="sb-centre"></div>
     <div class="sb-panel sb-right" id="sb-right">
-      <div class="sb-player-name" id="sb-right-name">BLUE</div>
+      <div class="sb-player-name" id="sb-right-name">ROCKY</div>
       <div class="sb-slots" id="sb-slots-right"></div>
     </div>
   </div>
-
   <div id="status-bar"></div>
 </div>
 
@@ -127,15 +178,12 @@
     <h2 class="final-title">FINAL CHANCE</h2>
     <p class="final-sub">Tap two name buttons to swap them</p>
   </div>
-
-  <!-- FINAL DUAL TIMER -->
   <div class="dual-timer final-dual-timer" id="final-timer-bar">
     <div class="timer-track"><div class="timer-fill" id="final-timer-fill"></div></div>
     <div class="timer-ticks" id="final-timer-ticks"></div>
   </div>
-
   <div id="final-my-section">
-    <div id="swap-counter" style="font-size:13px;font-weight:800;letter-spacing:0.15em;text-align:center;margin-bottom:8px;"></div>
+    <div id="swap-counter"></div>
     <p class="final-section-label">YOUR PICKS — tap two to swap</p>
     <div id="final-my-cards" class="final-cards-row"></div>
   </div>
@@ -152,7 +200,7 @@
   <div id="result-verdict"></div>
   <div id="result-scores"></div>
   <div id="result-breakdown"></div>
-  <button class="btn-primary share-btn" onclick="shareResult()">Come play TELL with me →</button>
+  <button class="btn-primary share-btn" style="display:none" onclick="shareResult()">Come play TELL with me →</button>
 </div>
 
 <!-- POPUP -->
@@ -167,9 +215,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  firebase.initializeApp({
-    databaseURL: 'https://tell-game-default-rtdb.firebaseio.com'
-  });
+  firebase.initializeApp({ databaseURL: 'https://tell-game-default-rtdb.firebaseio.com' });
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>

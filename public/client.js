@@ -145,22 +145,18 @@ function playScoreTickSound(){
 
 // ── SPLASH ──
 window.addEventListener('load', () => {
+  startMusic(); // music from the very start
   setTimeout(() => {
-    if(_codeFromUrl){ show('screen-joiner'); setTimeout(()=>document.getElementById('input-joiner-name').focus(),100); }
-    else            { show('screen-creator'); setTimeout(()=>document.getElementById('input-creator-name').focus(),100); }
+    if(_codeFromUrl){ show('screen-joiner'); }
+    else            { show('screen-creator'); }
   }, 3500);
 });
 
-// ── INPUTS ──
-document.getElementById('input-creator-name').addEventListener('input', function(){ document.getElementById('btn-challenge').disabled=!this.value.trim(); });
-document.getElementById('input-joiner-name').addEventListener('input',  function(){ document.getElementById('btn-join').disabled=!this.value.trim(); });
-document.getElementById('input-creator-name').addEventListener('keydown', e=>{ if(e.key==='Enter') createGame(); });
-document.getElementById('input-joiner-name').addEventListener('keydown',  e=>{ if(e.key==='Enter') joinGame(); });
+// ── NO INPUTS — names are fixed ──
 
 // ── CREATE ──
 function createGame() {
-  myName=document.getElementById('input-creator-name').value.trim();
-  if(!myName) return;
+  myName='APOLLO CREED';
   isCreator=true; myColour='red';
   socket.emit('create_room',{name:myName});
 }
@@ -171,12 +167,11 @@ socket.on('room_created',({code})=>{
 
 // ── JOIN ──
 function joinGame() {
-  myName=document.getElementById('input-joiner-name').value.trim();
-  if(!myName||!_codeFromUrl) return;
+  myName='ROCKY BALBOA';
+  if(!_codeFromUrl) return;
   roomCode=_codeFromUrl; isCreator=false; myColour='blue';
-  startMusic();
-  document.getElementById('btn-join').disabled=true;
-  document.getElementById('btn-join').textContent='JOINING…';
+  const btn=document.getElementById('btn-join');
+  if(btn){ btn.disabled=true; btn.textContent='ENTERING THE RING…'; }
   socket.emit('join_room',{name:myName,code:roomCode});
   socket.emit('join_socket_room',{code:roomCode});
   listenToRoom(roomCode);
@@ -190,7 +185,6 @@ socket.on('join_error',({message})=>{
 
 // ── SHARE ──
 function shareInvite() {
-  startMusic();
   const link=window._inviteLink;
   const showWaiting=()=>{ document.querySelector('.share-invite-btn').classList.add('hidden'); document.getElementById('waiting-status').classList.remove('hidden'); };
   if(navigator.share){ navigator.share({title:'TELL',text:'I challenge you to a game of TELL 👀',url:link}).then(showWaiting).catch(()=>showWaiting()); }
