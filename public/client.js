@@ -911,7 +911,8 @@ function showPopupText(text,fontSize,duration,callback){
     inner.style.transitionDelay='0ms';
     popup.classList.remove('show');
     img.style.display=''; textEl.style.fontSize=''; textEl.style.whiteSpace='';
-    setTimeout(()=>{ playPendingAudio(); if(callback) callback(); },220);
+    playPendingAudio(); // synchronous inside gesture for iOS
+    setTimeout(()=>{ if(callback) callback(); },220);
   };
   popup.onclick=dismiss;
   setTimeout(dismiss,duration);
