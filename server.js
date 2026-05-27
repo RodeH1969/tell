@@ -151,7 +151,8 @@ io.on('connection', (socket) => {
   // SUBMIT PICK — broadcast to room via socket for real-time display
   socket.on('submit_pick', async ({ code, name, faceIndex }) => {
     const room = await getRoom(code);
-    if (!room || room.phase !== 'picking') return;
+    // Accept picks during 'picking' OR 'revealing' — player may tap just as reveal starts
+    if (!room || (room.phase !== 'picking' && room.phase !== 'revealing')) return;
 
     const roundPicks = room.roundPicks || {};
     roundPicks[name] = faceIndex;
