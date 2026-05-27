@@ -198,6 +198,7 @@ io.on('connection', (socket) => {
     if (players.every(p => p.finalSubmitted)) {
       const phaseRef = db.ref(`rooms/${code}/phase`);
       phaseRef.transaction(currentPhase => {
+        if (currentPhase === null) return currentPhase; // let Firebase retry
         if (currentPhase === 'final') return 'resolving';
         return undefined;
       }, (error, committed) => {
