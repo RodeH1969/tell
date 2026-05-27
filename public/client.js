@@ -258,10 +258,16 @@ function onGameStart(room) {
   isCreator=players.indexOf(me)===0;
   socket.emit('join_socket_room',{code:room.code});
   gameData.rounds.forEach(r=>preloadAudio(r.questions));
-  show('screen-game');
   setupHeader();
   setupTimerNames();
-  setTimeout(showLetsPlay,1000);
+  // Show Let's Play popup FIRST, then reveal game screen — no flash
+  showPopupText("Let's Play Tell!",'clamp(42px,12vw,68px)',2000,()=>{
+    show('screen-game');
+    showPopupText('Each player has 15 seconds to pick which image matches the historical figure announced.','clamp(20px,5vw,28px)',3500,()=>{
+      if(gameData){ renderCards(gameData.rounds[0].faces); setTimeout(()=>flipCardsToFace(gameData.rounds[0].faces),100); }
+      renderScoreboard(4);
+    });
+  });
 }
 
 function setupHeader() {
@@ -296,15 +302,7 @@ function buildTicks(containerId,colour) {
   }
 }
 
-// ── LET'S PLAY ──
-function showLetsPlay() {
-  showPopupText("Let's Play Tell!",'clamp(42px,12vw,68px)',2000,()=>{
-    showPopupText('Each player has 15 seconds to pick which image matches the historical figure announced.','clamp(20px,5vw,28px)',3500,()=>{
-      if(gameData){ renderCards(gameData.rounds[0].faces); setTimeout(()=>flipCardsToFace(gameData.rounds[0].faces),100); }
-      renderScoreboard(4);
-    });
-  });
-}
+// ── LET'S PLAY — now called inline from onGameStart ──
 
 function flipCardsToFace(faces) {
   document.querySelectorAll('#faces-row .face-card').forEach((card,i)=>{

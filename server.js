@@ -168,8 +168,11 @@ io.on('connection', (socket) => {
     // Broadcast pick to all clients in real-time
     io.to(code).emit('pick_made', { submitterName: name, faceIndex });
 
-    if (Object.keys(roundPicks).length >= 2) {
-      revealQuestion(code);
+    if (Object.keys(roundPicks).length >= 2 && room.phase === 'picking') {
+      // Guard: set phase to 'revealing' first to prevent double-trigger
+      await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
+      const fresh = await getRoom(code);
+      if (fresh) revealQuestion(code, fresh);
     }
   });
 
@@ -223,12 +226,10 @@ async function startQuestion(code, gameRound, questionIdx) {
   // Client Firebase listener picks this up automatically
 }
 
-async function revealQuestion(code) {
-  const room = await getRoom(code);
+async function revealQuestion(code, room) {
+  if (!room) room = await getRoom(code);
   if (!room) return;
-
-  await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
-
+  // phase already set to 'revealing' by submit_pick handler
   setTimeout(async () => {
     if (room.currentQuestion < 3) {
       setTimeout(() => startQuestion(code, room.currentRound, room.currentQuestion + 1), 2000);
