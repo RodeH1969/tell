@@ -468,3 +468,52 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
   gap: 6px;
   width: 100%;
 }
+
+/* ══ STOCK TICKER ══ */
+#ticker-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #1a1a2e;
+  border-bottom: 2px solid var(--gold);
+  height: 36px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+#ticker-track {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: tickerScroll 80s linear infinite;
+  will-change: transform;
+}
+
+.ticker-item {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  padding: 0 16px;
+}
+
+.ticker-sep {
+  color: var(--gold);
+  font-size: 12px;
+  padding: 0 8px;
+  opacity: 0.6;
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Push all screens down to account for ticker */
+body { padding-top: 36px; }
+#popup-letsplay { top: 36px; }
+#fireworks-canvas { top: 36px; }
