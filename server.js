@@ -155,15 +155,17 @@ io.on('connection', (socket) => {
     console.log(`PICKS SO FAR: ${JSON.stringify(currentPicks)}`);
 
     if (Object.keys(currentPicks).length >= 2) {
-      // Use transaction to ensure only one server process triggers reveal
       const phaseRef = db.ref(`rooms/${code}/phase`);
       phaseRef.transaction(currentPhase => {
+        if (currentPhase === null) return currentPhase; // let Firebase retry with real value
         if (currentPhase === 'picking' || currentPhase === 'revealing') return 'revealing_done';
-        return undefined;
+        return undefined; // abort — already handled
       }, (error, committed) => {
         if (!error && committed) {
           console.log(`REVEALING room ${code}`);
           revealQuestion(code);
+        } else {
+          console.log(`Transaction not committed: error=${error} committed=${committed}`);
         }
       });
     }
