@@ -145,7 +145,6 @@ function playScoreTickSound(){
 
 // ── SPLASH ──
 window.addEventListener('load', () => {
-  startMusic(); // music from the very start
   setTimeout(() => {
     if(_codeFromUrl){ show('screen-joiner'); }
     else            { show('screen-creator'); }
@@ -156,6 +155,7 @@ window.addEventListener('load', () => {
 
 // ── CREATE ──
 function createGame() {
+  startMusic();
   myName='APOLLO CREED';
   isCreator=true; myColour='red';
   socket.emit('create_room',{name:myName});
@@ -167,6 +167,7 @@ socket.on('room_created',({code})=>{
 
 // ── JOIN ──
 function joinGame() {
+  startMusic();
   myName='ROCKY BALBOA';
   if(!_codeFromUrl) return;
   roomCode=_codeFromUrl; isCreator=false; myColour='blue';
