@@ -47,14 +47,14 @@ function playQuestion(filename) { _pendingAudio=filename; showAudioButton(); }
 function playPendingAudio() {
   if(!_pendingAudio) return;
   const filename=_pendingAudio;
-  const a=_audioElements[filename]||new Audio(`/audio/${filename}`);
-  _audioElements[filename]=a;
-  a.setAttribute('playsinline',''); a.setAttribute('webkit-playsinline','');
-  a.volume=0.9; a.currentTime=0;
-  const p=a.play();
-  if(p&&typeof p.then==='function'){
-    p.then(()=>{_pendingAudio=null;hideAudioButton();}).catch(()=>showAudioButton());
-  } else { _pendingAudio=null; hideAudioButton(); }
+  _pendingAudio=null;
+  hideAudioButton();
+  // Create fresh Audio element inside gesture handler for iOS
+  const a = new Audio(`/audio/${filename}`);
+  a.volume=0.9;
+  a.setAttribute('playsinline','');
+  a.setAttribute('webkit-playsinline','');
+  a.play().catch(()=>{ showAudioButton(); _pendingAudio=filename; });
 }
 
 function unlockAudio() {
