@@ -131,25 +131,23 @@ io.on('connection', (socket) => {
 
     console.log(`PICK: ${name} -> face ${faceIndex} in room ${code} (phase: ${room.phase})`);
 
-    // ── ATOMIC: write this player's pick directly, don't overwrite other player's pick ──
-    await db.ref(`rooms/${code}/roundPicks/${name}`).set(faceIndex);
-
-    // Update this player's picks record
+    // Find player index from already-loaded room data
+    const players = room.players;
+    const playerIdx = players.findIndex(p => p.name === name);
     const pickKey = `${room.currentRound}_${room.currentQuestion}`;
-    await db.ref(`rooms/${code}/players`).once('value').then(async snap => {
-      const players = snap.val();
-      const idx = players.findIndex(p => p.name === name);
-      if (idx >= 0) {
-        if (!players[idx].picks) players[idx].picks = {};
-        players[idx].picks[pickKey] = faceIndex;
-        await db.ref(`rooms/${code}/players/${idx}/picks/${pickKey}`).set(faceIndex);
-      }
-    });
+
+    // Single atomic multi-path update — one Firebase write instead of many
+    const updates = {};
+    updates[`rooms/${code}/roundPicks/${name}`] = faceIndex;
+    if (playerIdx >= 0) {
+      updates[`rooms/${code}/players/${playerIdx}/picks/${pickKey}`] = faceIndex;
+    }
+    await db.ref().update(updates);
 
     // Broadcast to room
     io.to(code).emit('pick_made', { submitterName: name, faceIndex });
 
-    // Read fresh roundPicks count
+    // Read fresh roundPicks count (one read)
     const picksSnap = await db.ref(`rooms/${code}/roundPicks`).once('value');
     const currentPicks = picksSnap.val() || {};
     console.log(`PICKS SO FAR: ${JSON.stringify(currentPicks)}`);
