@@ -739,14 +739,16 @@ function onRoundResult(room) {
     // After 10s move on
     setTimeout(()=>{
       if(!isLast){
-        // Clear stale result and card content
-        document.getElementById('result-breakdown').innerHTML='';
-        document.getElementById('result-verdict').innerHTML='';
+        // Show Round 2 popup WHILE still on result screen — no flash
         document.getElementById('faces-row').innerHTML='';
         document.getElementById('status-bar').textContent='';
-        show('screen-game');
-        renderScoreboard(4);
-        showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{ show('screen-game'); });
+        showGenericPopup('⚡ NOW FOR ROUND 2 ⚡\nAre you ready?',()=>{
+          // Only switch to game screen after popup closes
+          document.getElementById('result-breakdown').innerHTML='';
+          document.getElementById('result-verdict').innerHTML='';
+          show('screen-game');
+          renderScoreboard(4);
+        });
       } else {
         // Clear stale cards before game over screen loads
         document.getElementById('faces-row').innerHTML='';
