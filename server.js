@@ -1,4 +1,4 @@
-// ── TELL server.js v9 — Firebase state, sockets for picks only ──
+// ── TELL server.js v10 — atomic picks ──
 
 const express = require('express');
 const http = require('http');
@@ -93,100 +93,86 @@ async function deleteRoom(code) {
   await db.ref(`rooms/${code}`).remove();
 }
 
-// ── SOCKET HANDLING ──
-// Sockets are only used for:
-// 1. create_room / join_room (setup)
-// 2. submit_pick (real-time pick sharing)
-// 3. submit_final (final picks)
-// Everything else is driven by Firebase listeners on the client
-
 io.on('connection', (socket) => {
 
-  // CREATE ROOM
   socket.on('create_room', async ({ name }) => {
     const code = generateCode();
     const baseGame = GAMES[Math.floor(Math.random() * GAMES.length)];
     console.log(`CREATE: name=${name} code=${code} game=${baseGame.gameId}`);
-
     const room = {
-      code,
-      game: baseGame,
+      code, game: baseGame,
       players: [{ name, score: 0, picks: {}, changes: [0,0] }],
-      phase: 'waiting',
-      currentRound: 0,
-      currentQuestion: 0,
-      roundPicks: {}
+      phase: 'waiting', currentRound: 0, currentQuestion: 0, roundPicks: {}
     };
-
     await db.ref(`rooms/${code}`).set(room);
     setTimeout(() => db.ref(`rooms/${code}`).remove(), 30 * 60 * 1000);
     socket.emit('room_created', { code });
   });
 
-  // JOIN ROOM
   socket.on('join_room', async ({ name, code }) => {
     console.log(`JOIN: name=${name} code=${code}`);
     const room = await getRoom(code);
-
     if (!room) return socket.emit('join_error', { message: 'Room not found.' });
     if (room.players && room.players.length >= 2) return socket.emit('join_error', { message: 'Room is full.' });
     if (room.phase !== 'waiting') return socket.emit('join_error', { message: 'Game already started.' });
 
     const players = room.players || [];
     players.push({ name, score: 0, picks: {}, changes: [0,0] });
-
     const preparedGame = prepareGame(room.game);
-
-    // Write to Firebase — clients are listening and will react automatically
-    await db.ref(`rooms/${code}`).update({
-      players,
-      game: preparedGame,
-      phase: 'starting'
-    });
-
-    // After 8s (flip animation time) start round 1
+    await db.ref(`rooms/${code}`).update({ players, game: preparedGame, phase: 'starting' });
     setTimeout(() => startQuestion(code, 0, 0), 8000);
   });
 
-  // SUBMIT PICK — broadcast to room via socket for real-time display
   socket.on('submit_pick', async ({ code, name, faceIndex }) => {
     const room = await getRoom(code);
-    // Accept picks during 'picking' OR 'revealing' — player may tap just as reveal starts
-    if (!room || (room.phase !== 'picking' && room.phase !== 'revealing')) return;
+    if (!room) return;
+    // Accept picks during picking or revealing (late tap edge case)
+    if (room.phase !== 'picking' && room.phase !== 'revealing') return;
 
-    const roundPicks = room.roundPicks || {};
-    roundPicks[name] = faceIndex;
+    console.log(`PICK: ${name} -> face ${faceIndex} in room ${code} (phase: ${room.phase})`);
 
-    const players = room.players;
-    const player = players.find(p => p.name === name);
-    if (player) {
-      if (!player.picks) player.picks = {};
-      player.picks[`${room.currentRound}_${room.currentQuestion}`] = faceIndex;
-    }
+    // ── ATOMIC: write this player's pick directly, don't overwrite other player's pick ──
+    await db.ref(`rooms/${code}/roundPicks/${name}`).set(faceIndex);
 
-    await db.ref(`rooms/${code}`).update({ roundPicks, players });
+    // Update this player's picks record
+    const pickKey = `${room.currentRound}_${room.currentQuestion}`;
+    await db.ref(`rooms/${code}/players`).once('value').then(async snap => {
+      const players = snap.val();
+      const idx = players.findIndex(p => p.name === name);
+      if (idx >= 0) {
+        if (!players[idx].picks) players[idx].picks = {};
+        players[idx].picks[pickKey] = faceIndex;
+        await db.ref(`rooms/${code}/players/${idx}/picks/${pickKey}`).set(faceIndex);
+      }
+    });
 
-    // Broadcast pick to all clients in real-time
+    // Broadcast to room
     io.to(code).emit('pick_made', { submitterName: name, faceIndex });
 
-    // Firebase transaction — only one submit_pick triggers reveal
-    if (Object.keys(roundPicks).length >= 2) {
+    // Read fresh roundPicks count
+    const picksSnap = await db.ref(`rooms/${code}/roundPicks`).once('value');
+    const currentPicks = picksSnap.val() || {};
+    console.log(`PICKS SO FAR: ${JSON.stringify(currentPicks)}`);
+
+    if (Object.keys(currentPicks).length >= 2) {
+      // Use transaction to ensure only one server process triggers reveal
       const phaseRef = db.ref(`rooms/${code}/phase`);
       phaseRef.transaction(currentPhase => {
-        if (currentPhase === 'picking') return 'revealing';
-        return undefined; // abort — already handled
+        if (currentPhase === 'picking' || currentPhase === 'revealing') return 'revealing_done';
+        return undefined;
       }, (error, committed) => {
-        if (!error && committed) revealQuestion(code);
+        if (!error && committed) {
+          console.log(`REVEALING room ${code}`);
+          revealQuestion(code);
+        }
       });
     }
   });
 
-  // JOIN SOCKET ROOM (for pick broadcasts)
   socket.on('join_socket_room', ({ code }) => {
     socket.join(code);
   });
 
-  // SUBMIT FINAL
   socket.on('submit_final', async ({ code, name, picks, changes }) => {
     const room = await getRoom(code);
     if (!room || room.phase !== 'final') return;
@@ -204,37 +190,42 @@ io.on('connection', (socket) => {
       player.changes[room.currentRound] = changes || 0;
     }
 
-    // Write who has locked in so both clients can show waiting state
     const lockedIn = players.filter(p => p.finalSubmitted).map(p => p.name);
     await db.ref(`rooms/${code}`).update({ players, lockedIn });
 
     if (players.every(p => p.finalSubmitted)) {
-      // Both locked — resolve
-      await db.ref(`rooms/${code}`).update({ lockedIn: [] });
-      resolveRound(code);
+      const phaseRef = db.ref(`rooms/${code}/phase`);
+      phaseRef.transaction(currentPhase => {
+        if (currentPhase === 'final') return 'resolving';
+        return undefined;
+      }, (error, committed) => {
+        if (!error && committed) {
+          db.ref(`rooms/${code}`).update({ lockedIn: [] });
+          resolveRound(code);
+        }
+      });
     }
   });
 });
 
-// ── GAME FLOW — all state written to Firebase ──
+// ── GAME FLOW ──
 
 async function startQuestion(code, gameRound, questionIdx) {
-  const room = await getRoom(code);
-  if (!room) return;
-
+  console.log(`START Q: room=${code} round=${gameRound} q=${questionIdx}`);
   await db.ref(`rooms/${code}`).update({
     phase: 'picking',
     currentRound: gameRound,
     currentQuestion: questionIdx,
     roundPicks: {}
   });
-  // Client Firebase listener picks this up automatically
 }
 
 async function revealQuestion(code) {
   const room = await getRoom(code);
   if (!room) return;
-  // Phase already set to 'revealing' by transaction — clients react via Firebase listener
+  // phase already set to 'revealing_done' by transaction
+  // Push 'revealing' so clients get the reveal event
+  await db.ref(`rooms/${code}`).update({ phase: 'revealing' });
   setTimeout(async () => {
     if (room.currentQuestion < 3) {
       setTimeout(() => startQuestion(code, room.currentRound, room.currentQuestion + 1), 2000);
@@ -247,13 +238,9 @@ async function revealQuestion(code) {
 async function startFinalPhase(code) {
   const room = await getRoom(code);
   if (!room) return;
-
   const players = room.players;
   players.forEach(p => { p.finalSubmitted = false; });
-
   await db.ref(`rooms/${code}`).update({ phase: 'final', players, lockedIn: [] });
-
-  // Force resolve after 35s
   setTimeout(async () => {
     const r = await getRoom(code);
     if (r && r.phase === 'final') {
@@ -276,11 +263,8 @@ async function resolveRound(code) {
   const p1Results = {}, p2Results = {};
 
   roundData.questions.forEach((q, i) => {
-    // Use final picks if available, fall back to initial picks
-    const p1FinalKey = `final_${gameRound}_${i}`;
-    const p2FinalKey = `final_${gameRound}_${i}`;
-    const p1Pick = (p1.picks || {})[p1FinalKey] ?? ((p1.picks || {})[`${gameRound}_${i}`]) ?? 0;
-    const p2Pick = (p2.picks || {})[p2FinalKey] ?? ((p2.picks || {})[`${gameRound}_${i}`]) ?? 0;
+    const p1Pick = (p1.picks||{})[`final_${gameRound}_${i}`] ?? (p1.picks||{})[`${gameRound}_${i}`] ?? 0;
+    const p2Pick = (p2.picks||{})[`final_${gameRound}_${i}`] ?? (p2.picks||{})[`${gameRound}_${i}`] ?? 0;
     const p1Right = p1Pick === q.answerIndex;
     const p2Right = p2Pick === q.answerIndex;
     if (p1Right) p1Score++;
@@ -310,7 +294,7 @@ async function resolveRound(code) {
   });
 
   if (gameRound < 1) {
-    setTimeout(() => startQuestion(code, 1, 0), 20000); // 10s results + popups
+    setTimeout(() => startQuestion(code, 1, 0), 20000);
   } else {
     setTimeout(() => endGame(code), 20000);
   }
@@ -329,16 +313,8 @@ async function endGame(code) {
     roundData.questions.forEach((q, qi) => {
       const globalIdx = ri * 4 + qi;
       const offset = ri * 4;
-      // Always use final picks (prefixed) — they are the authoritative answer after Final Chance
-      const p1FinalKey = `final_${ri}_${qi}`;
-      const p2FinalKey = `final_${ri}_${qi}`;
-      // Fall back to round-prefixed initial picks, then bare index
-      const p1Pick = (p1.picks || {})[p1FinalKey]
-                  ?? (p1.picks || {})[`${ri}_${qi}`]
-                  ?? 0;
-      const p2Pick = (p2.picks || {})[p2FinalKey]
-                  ?? (p2.picks || {})[`${ri}_${qi}`]
-                  ?? 0;
+      const p1Pick = (p1.picks||{})[`final_${ri}_${qi}`] ?? (p1.picks||{})[`${ri}_${qi}`] ?? 0;
+      const p2Pick = (p2.picks||{})[`final_${ri}_${qi}`] ?? (p2.picks||{})[`${ri}_${qi}`] ?? 0;
       allResults[p1.name][globalIdx] = { picked: p1Pick + offset, correct: q.answerIndex + offset, right: p1Pick === q.answerIndex };
       allResults[p2.name][globalIdx] = { picked: p2Pick + offset, correct: q.answerIndex + offset, right: p2Pick === q.answerIndex };
     });
