@@ -24,7 +24,7 @@
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html,body { height:100%; font-family:var(--sans); background:var(--white); color:var(--dark); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
 
-.screen { display:none; flex-direction:column; align-items:center; min-height:calc(100vh - 108px); padding:16px 16px 40px; }
+.screen { display:none; flex-direction:column; align-items:center; min-height:calc(100vh - 64px); padding:16px 16px 40px; }
 .screen.active { display:flex; }
 .hidden { display:none !important; }
 
@@ -210,7 +210,7 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
 /* ══ POPUP — FULL SCREEN DOMINATING ══ */
 #popup-letsplay {
   position: fixed;
-  top: 108px;
+  top: 64px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -481,7 +481,7 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
   z-index: 1000;
   background: #1a1a2e;
   border-bottom: 3px solid var(--gold);
-  height: 108px;
+  height: 64px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -497,17 +497,17 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
 
 .ticker-item {
   font-family: var(--sans);
-  font-size: 38px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #ffffff;
-  padding: 0 32px;
+  padding: 0 24px;
 }
 
 .ticker-sep {
   color: var(--gold);
-  font-size: 32px;
-  padding: 0 16px;
+  font-size: 20px;
+  padding: 0 12px;
   opacity: 0.6;
 }
 
@@ -517,5 +517,5 @@ html,body { height:100%; font-family:var(--sans); background:var(--white); color
 }
 
 /* Push all screens down to account for ticker */
-body { padding-top: 108px; }
-#fireworks-canvas { top: 108px; height: calc(100vh - 108px); }
+body { padding-top: 64px; }
+#fireworks-canvas { top: 64px; height: calc(100vh - 64px); }
